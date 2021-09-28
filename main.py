@@ -1,7 +1,7 @@
 from kubesys.client import KubernetesClient
 from kubesys.common import goodPrintDict
 
-def main():
+def test_code():
     pod_json= '''{
                         "apiVersion": "v1",
                         "kind": "Pod",
@@ -54,7 +54,8 @@ def main():
     print("is OK: ", OK)
     print("HTTP status code: ", http_status_code,"\n")
 
-    # test get all kinds
-    # client.getKinds()
+def main():
+    test_code()
+    
 if __name__ == '__main__':
     main()

@@ -36,8 +36,7 @@ from kubesys.client import KubernetesClient
     - [中文文档](https://www.yuque.com/kubesys/kubernetes-client/overview)
     - [Creating a client](#creating-a-client)
     - [Simple example](#simple-example)
-    - [Get all kinds](#get-all-kinds)
-    - [Work with other SDKs](#work-with-other-sdks)
+    - [full-example](#full-example)
 
 #### create token with the following commands:
 

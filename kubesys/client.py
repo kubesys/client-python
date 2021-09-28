@@ -4,7 +4,6 @@ from requests import status_codes
 from requests.api import request
 from kubesys.http_request import createRequest,createRequestReturOriginal
 from kubesys.analyzer import KubernetesAnalyzer
-from kubesys.watch_handler import WatchHandler
 from kubesys.watcher import KubernetesWatcher
 import json
 
@@ -178,7 +177,7 @@ class KubernetesClient():
         else:
             url += self.analyzer.FullKindToNameDict[fullKind]
 
-        Watching(url,watcher=watcher)
+        watcher.watching(url=url,token=self.token)
 
     def watchResources(self,kind,namespace,watcher) ->None:
         self.watchResource(self,kind,namespace,watcher,name=None)
@@ -230,50 +229,3 @@ class KubernetesClient():
 
         url = url[:len(url)-1]
         return createRequest(url=url,token=self.token, method="GET", keep_json=False)
-
-
-def Watching(url,watcher)->None:
-    client = KubernetesClient(account_info={"URL":url, "Token": watcher.client.Token},analyzer=watcher.client.analyzer)
-    header = {
-        "Accept": "*/*",
-        "Authorization": "Bearer "+ client.token,
-        "Accept-Encoding": "gzip, deflate, br",
-    }
-
-    with requests.get(url=url, headers=header, verify=False, stream= True) as response:
-        for json_str in response.iter_lines():
-            if len(json_str)<1:
-                continue
-
-            jsonObj = json.load(json_str)
-            if jsonObj["type"] == "ADDED":
-                watcher.handler.DoAdded(jsonObj["object"])
-            elif jsonObj["type"] == "MODIFIED":
-                watcher.handler.DoModified(jsonObj["object"])
-            elif jsonObj["type"] == "DELETED":
-                watcher.handler.DoDeleted(jsonObj["object"])
-            else:
-                print("unknow type while watching:",jsonObj["type"])
-
-    # with requests.get(url=url, headers=header, verify=False, stream= True) as response:
-    #     while(True):
-    #         if response.reason != "OK":
-    #             print("HTTP response error when watching, status code:",response.status_code)
-    #             exit(-1)
-
-    #         json_strs = response.text.split("\n")
-    #         for json_str in json_strs:
-    #             if len(json_str)<1:
-    #                 continue
-
-    #             jsonObj = json.load(json_str)
-    #             if jsonObj["type"] == "ADDED":
-    #                 watcher.handler.DoAdded(jsonObj["object"])
-    #             elif jsonObj["type"] == "MODIFIED":
-    #                 watcher.handler.DoModified(jsonObj["object"])
-    #             elif jsonObj["type"] == "DELETED":
-    #                 watcher.handler.DoDeleted(jsonObj["object"])
-    #             else:
-    #                 print("unknow type while watching:",jsonObj["type"])
-                    
-        

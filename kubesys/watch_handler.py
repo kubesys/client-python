@@ -10,6 +10,6 @@ def DoDeleted(json_dict)->None:
 
 class WatchHandler():
     def __init__(self,func={"DoAdder":DoAdder,"DoModified":DoModified,"DoDeleted":DoDeleted}) -> None:
-        self.DoAdder= func["DoAdder"]
+        self.DoAdded= func["DoAdder"]
         self.DoModified= func["DoModified"]
         self.DoDeleted = func["DoDeleted"]

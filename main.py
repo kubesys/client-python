@@ -1,7 +1,9 @@
 from kubesys.client import KubernetesClient
 from kubesys.common import goodPrintDict
+from kubesys.watcher import KubernetesWatcher
+from kubesys.watch_handler import WatchHandler
 
-def test_code():
+def test_CRUD():
     pod_json= '''{
                         "apiVersion": "v1",
                         "kind": "Pod",
@@ -37,8 +39,8 @@ def test_code():
     print("is OK: ", OK)
     print("HTTP status code: ", http_status_code,"\n")
 
-    # test list resources
-    print("--test list resources:")
+    # test create resources
+    print("--test create resources:")
     response_dict,OK,http_status_code = client.createResource(pod_json)
     print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
     print("is OK: ", OK)
@@ -58,8 +60,15 @@ def test_code():
     print("is OK: ", OK)
     print("HTTP status code: ", http_status_code,"\n")
 
+def test_watcher():
+    print("--start to watch...")
+    client = KubernetesClient(host_label="default")
+    watcher = KubernetesWatcher(client,WatchHandler())
+    client.watchResource(kind="Pod", namespace="default", name="busybox",watcher=watcher)
+    
 def main():
-    test_code()
+    test_CRUD()
+    test_watcher()
 
 if __name__ == '__main__':
     main()

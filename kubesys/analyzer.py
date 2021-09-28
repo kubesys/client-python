@@ -1,5 +1,4 @@
 import kubesys.http_request as http_request
-
 class KubernetesAnalyzer:
     def __init__(self) -> None:
         self.KindToFullKindDict = {}

@@ -2,42 +2,42 @@ import kubesys.http_request as http_request
 
 class KubernetesAnalyzer:
     def __init__(self) -> None:
-        self.KindToFullKindMapper = {}
-        self.FullKindToApiPrefixMapper = {}
+        self.KindToFullKindDict = {}
+        self.FullKindToApiPrefixDict = {}
         
-        self.FullKindToNameMapper = {}
-        self.FullKindToNamespaceMapper = {}
+        self.FullKindToNameDict = {}
+        self.FullKindToNamespaceDict = {}
 
-        self.FullKindToVersionMapper = {}
-        self.FullKindToGroupMapper = {}
-        self.FullKindToVerbsMapper = {}
+        self.FullKindToVersionDict = {}
+        self.FullKindToGroupDict = {}
+        self.FullKindToVerbsDict = {}
 
     def learning(self,url,token,verify_SSL=False) ->None:
-        registryValues = http_request.createRequest(url=url,token=token,method="GET",keep_json=True)[0]
+        registryValues = http_request.createRequest(url=url,token=token,method="GET",keep_json=False)[0]
 
-        print(registryValues)
+        # print(registryValues)
         for path in registryValues["paths"]:
             if path.startswith("/api") and (len(path.split("/"))==4 or path.lower().strip() == "/api/v1"):
-                resourceValues = http_request.createRequest(url=url+path,token=token,method="GET",keep_json=True)[0]
+                resourceValues = http_request.createRequest(url=url+path,token=token,method="GET",keep_json=False)[0]
                 apiVersion = str(resourceValues["groupVersion"])
 
                 for resourceValue in resourceValues["resources"]:
                     shortKind = resourceValue["kind"]
                     fullKind = self.getFullKind(shortKind, apiVersion)
 
-                    if fullKind not in self.FullKindToApiPrefixMapper.keys():
-                        if shortKind not in self.KindToFullKindMapper.keys():
-                            self.KindToFullKindMapper[shortKind] = []
+                    if fullKind not in self.FullKindToApiPrefixDict.keys():
+                        if shortKind not in self.KindToFullKindDict.keys():
+                            self.KindToFullKindDict[shortKind] = []
 
-                        self.KindToFullKindMapper[shortKind].append(fullKind)
-                        self.FullKindToApiPrefixMapper[fullKind] = url+path
+                        self.KindToFullKindDict[shortKind].append(fullKind)
+                        self.FullKindToApiPrefixDict[fullKind] = url+path
 
-                        self.FullKindToNameMapper = str(resourceValue["name"])
-                        self.FullKindToNamespaceMapper[fullKind] = bool(resourceValue["namespaced"])
+                        self.FullKindToNameDict[fullKind] = str(resourceValue["name"])
+                        self.FullKindToNamespaceDict[fullKind] = bool(resourceValue["namespaced"])
 
-                        self.FullKindToVersionMapper[fullKind] = apiVersion
-                        self.FullKindToGroupMapper[fullKind] = self.getGroup(apiVersion)
-                        self.FullKindToVerbsMapper[fullKind] = resourceValue["verbs"]
+                        self.FullKindToVersionDict[fullKind] = apiVersion
+                        self.FullKindToGroupDict[fullKind] = self.getGroup(apiVersion)
+                        self.FullKindToVerbsDict[fullKind] = resourceValue["verbs"]
 
     def getGroup(self,apiVersion)->str:
         index = self.getLastIndex(apiVersion,"/")
@@ -47,7 +47,7 @@ class KubernetesAnalyzer:
             return ""
 
     def getLastIndex(self,s,flag)->int:
-        return len(s)-s[::-1].index(flag)-1
+        return len(s)-s[::-1].find(flag)-1
 
     def getFullKind(self,shortKind,apiVersion)->str:
         index = apiVersion.find("/")

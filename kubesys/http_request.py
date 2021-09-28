@@ -8,8 +8,8 @@ def createRequest(url,token,method="GET",body=None,verify=False,keep_json=False)
     response, OK, status_code = createRequestReturOriginal(url,token,method,body,verify)
 
     result=response.json()
-    if not keep_json:
-        result = json.dumps(result)
+    if keep_json:
+        result = json.dumps(result, indent=4,separators=(',', ': '))
 
     return result,OK,status_code
 
@@ -26,7 +26,7 @@ def createRequestReturOriginal(url,token,method="GET",body=None,verify=False)-> 
     if body:
         header["Content-Type"] = "application/json"
         
-        if body is dict:
+        if type(body) is dict:
             data = json.dumps(body, indent=4,separators=(',', ': '))
         else:
             data = str(body)
@@ -43,7 +43,7 @@ def createRequestReturOriginal(url,token,method="GET",body=None,verify=False)-> 
         print("unsupported HTTP request kind! Current method is",method_upper)
         exit(-1)
 
-    if response.reason=="OK":
+    if response.status_code >=200 and response.status_code <= 299:
         return response,True,response.status_code
 
     else:

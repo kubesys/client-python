@@ -1,15 +1,8 @@
-import kubesys
-import kubesys.client
 from kubesys.client import KubernetesClient
-import json
-from urllib3.connectionpool import InsecureRequestWarning
-from urllib3 import disable_warnings
-disable_warnings(InsecureRequestWarning)
+from kubesys.common import goodPrintDict
 
-load_account_from_json=True
-
-def createPod() -> str:
-    config_str = '''{
+def main():
+    pod_json= '''{
                         "apiVersion": "v1",
                         "kind": "Pod",
                         "metadata": {
@@ -35,28 +28,33 @@ def createPod() -> str:
                         }
                     }'''
 
-    config_dict=json.loads(config_str)
+    client = KubernetesClient(host_label="default")
 
-    return json.dumps(config_dict, indent=4,separators=(',', ': '))
+    # test list resources
+    response_dict,OK,http_status_code = client.listResources("Pod")
+    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+    print("is OK: ", OK)
+    print("HTTP status code: ", http_status_code,"\n")
 
-def updatePod(client) ->str:
-    jsonObj, OK, status_code = client.getResource("Pod", "default", "busybox")
-    labels = {}
-    labels["test"] = "test"
-    jsonObj["metadata"]["labels"] = labels
-    return json.dumps(jsonObj)
+    # test list resources
+    response_dict,OK,http_status_code = client.createResource(pod_json)
+    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+    print("is OK: ", OK)
+    print("HTTP status code: ", http_status_code,"\n")
 
-def main():
-    global load_account_from_json
+    # test get one single Resources
+    response_dict,OK,http_status_code = client.getResource(kind="Pod", namespace="default", name="busybox")
+    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+    print("is OK: ", OK)
+    print("HTTP status code: ", http_status_code,"\n")
 
-    account_info={"URL": "", "Token": ""}
+    # test delete pod
+    response_dict,OK,http_status_code = client.deleteResource(kind="Pod", namespace="default", name="busybox")
+    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+    print("is OK: ", OK)
+    print("HTTP status code: ", http_status_code,"\n")
 
-    if load_account_from_json:
-        with open("account.json",'r', encoding='UTF-8') as f:
-            account_info = json.load(f)
-
-    client = KubernetesClient(account_info)
-    client.Init()
-
+    # test get all kinds
+    # client.getKinds()
 if __name__ == '__main__':
     main()

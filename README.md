@@ -31,10 +31,10 @@ This project is based on the following softwares.
  
 ## Installation
 
-To install the Java client library to your local Maven repository, simply execute:
+To install the Python client library to your local Maven repository, simply execute:
 
 ```shell
-git clone --recursive https://github.com/kubesys/kubernetes-client-java
+git clone --recursive https://github.com/kubesys/kubernetes-client-python
 cd java
 mvn install
 ```

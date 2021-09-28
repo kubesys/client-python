@@ -186,14 +186,13 @@ print(goodPrintDict(response_dict))
 
 ## full-example
 
-see the result in [运行结果](/out.txt)
+see the result in [run-outputs](/out.txt)
 
 ```python
 from kubesys.client import KubernetesClient
 from kubesys.common import goodPrintDict
 
-def main():
-    pod_json= '''{
+pod_json= '''{
                         "apiVersion": "v1",
                         "kind": "Pod",
                         "metadata": {
@@ -219,35 +218,29 @@ def main():
                         }
                     }'''
 
-    client = KubernetesClient(host_label="default")
+client = KubernetesClient(host_label="default")
 
-    # test list resources
-    response_dict,OK,http_status_code = client.listResources("Pod")
-    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    print("is OK: ", OK)
-    print("HTTP status code: ", http_status_code,"\n")
+# test list resources
+response_dict,OK,http_status_code = client.listResources("Pod")
+print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+print("is OK: ", OK)
+print("HTTP status code: ", http_status_code,"\n")
 
-    # test list resources
-    response_dict,OK,http_status_code = client.createResource(pod_json)
-    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    print("is OK: ", OK)
-    print("HTTP status code: ", http_status_code,"\n")
+# test list resources
+response_dict,OK,http_status_code = client.createResource(pod_json)
+print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+print("is OK: ", OK)
+print("HTTP status code: ", http_status_code,"\n")
 
-    # test get one single Resources
-    response_dict,OK,http_status_code = client.getResource(kind="Pod", namespace="default", name="busybox")
-    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    print("is OK: ", OK)
-    print("HTTP status code: ", http_status_code,"\n")
+# test get one single Resources
+response_dict,OK,http_status_code = client.getResource(kind="Pod", namespace="default", name="busybox")
+print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+print("is OK: ", OK)
+print("HTTP status code: ", http_status_code,"\n")
 
-    # test delete pod
-    response_dict,OK,http_status_code = client.deleteResource(kind="Pod", namespace="default", name="busybox")
-    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    print("is OK: ", OK)
-    print("HTTP status code: ", http_status_code,"\n")
-
-    # test get all kinds
-    # client.getKinds()
-if __name__ == '__main__':
-    main()
+# test delete pod
+response_dict,OK,http_status_code = client.deleteResource(kind="Pod", namespace="default", name="busybox")
+print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+print("is OK: ", OK)
+print("HTTP status code: ", http_status_code,"\n")
 ```
-

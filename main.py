@@ -31,24 +31,28 @@ def test_code():
     client = KubernetesClient(host_label="default")
 
     # test list resources
+    print("--test list resources:")
     response_dict,OK,http_status_code = client.listResources("Pod")
     print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
     print("is OK: ", OK)
     print("HTTP status code: ", http_status_code,"\n")
 
     # test list resources
+    print("--test list resources:")
     response_dict,OK,http_status_code = client.createResource(pod_json)
     print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
     print("is OK: ", OK)
     print("HTTP status code: ", http_status_code,"\n")
 
     # test get one single Resources
+    print("--test get one single Resources")
     response_dict,OK,http_status_code = client.getResource(kind="Pod", namespace="default", name="busybox")
     print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
     print("is OK: ", OK)
     print("HTTP status code: ", http_status_code,"\n")
 
     # test delete pod
+    print("--test delete pod:")
     response_dict,OK,http_status_code = client.deleteResource(kind="Pod", namespace="default", name="busybox")
     print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
     print("is OK: ", OK)
@@ -56,6 +60,6 @@ def test_code():
 
 def main():
     test_code()
-    
+
 if __name__ == '__main__':
     main()

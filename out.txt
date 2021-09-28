@@ -1,8 +1,9 @@
+--test list resources:
 response_dict: {
     "kind": "PodList",
     "apiVersion": "v1",
     "metadata": {
-        "resourceVersion": "216838"
+        "resourceVersion": "218436"
     },
     "items": [
         {
@@ -5020,21 +5021,22 @@ response_dict: {
 is OK:  True
 HTTP status code:  200 
 
+--test list resources:
 response_dict: {
     "kind": "Pod",
     "apiVersion": "v1",
     "metadata": {
         "name": "busybox",
         "namespace": "default",
-        "uid": "0c5aaf97-506e-4fc9-a4dd-b2c5e473e377",
-        "resourceVersion": "216839",
-        "creationTimestamp": "2021-09-28T09:12:14Z",
+        "uid": "69599806-80a5-4e60-8726-61a205f055dc",
+        "resourceVersion": "218437",
+        "creationTimestamp": "2021-09-28T09:34:23Z",
         "managedFields": [
             {
                 "manager": "python-requests",
                 "operation": "Update",
                 "apiVersion": "v1",
-                "time": "2021-09-28T09:12:14Z",
+                "time": "2021-09-28T09:34:23Z",
                 "fieldsType": "FieldsV1",
                 "fieldsV1": {
                     "f:spec": {
@@ -5072,7 +5074,7 @@ response_dict: {
     "spec": {
         "volumes": [
             {
-                "name": "kube-api-access-brhzf",
+                "name": "kube-api-access-ns46b",
                 "projected": {
                     "sources": [
                         {
@@ -5127,7 +5129,7 @@ response_dict: {
                 "resources": {},
                 "volumeMounts": [
                     {
-                        "name": "kube-api-access-brhzf",
+                        "name": "kube-api-access-ns46b",
                         "readOnly": true,
                         "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
                     }
@@ -5170,22 +5172,22 @@ response_dict: {
 is OK:  True
 HTTP status code:  201 
 
-<class 'dict'>
+--test get one single Resources
 response_dict: {
     "kind": "Pod",
     "apiVersion": "v1",
     "metadata": {
         "name": "busybox",
         "namespace": "default",
-        "uid": "0c5aaf97-506e-4fc9-a4dd-b2c5e473e377",
-        "resourceVersion": "216840",
-        "creationTimestamp": "2021-09-28T09:12:14Z",
+        "uid": "69599806-80a5-4e60-8726-61a205f055dc",
+        "resourceVersion": "218438",
+        "creationTimestamp": "2021-09-28T09:34:23Z",
         "managedFields": [
             {
                 "manager": "kube-scheduler",
                 "operation": "Update",
                 "apiVersion": "v1",
-                "time": "2021-09-28T09:12:14Z",
+                "time": "2021-09-28T09:34:23Z",
                 "fieldsType": "FieldsV1",
                 "fieldsV1": {
                     "f:status": {
@@ -5208,7 +5210,7 @@ response_dict: {
                 "manager": "python-requests",
                 "operation": "Update",
                 "apiVersion": "v1",
-                "time": "2021-09-28T09:12:14Z",
+                "time": "2021-09-28T09:34:23Z",
                 "fieldsType": "FieldsV1",
                 "fieldsV1": {
                     "f:spec": {
@@ -5246,7 +5248,7 @@ response_dict: {
     "spec": {
         "volumes": [
             {
-                "name": "kube-api-access-brhzf",
+                "name": "kube-api-access-ns46b",
                 "projected": {
                     "sources": [
                         {
@@ -5301,7 +5303,7 @@ response_dict: {
                 "resources": {},
                 "volumeMounts": [
                     {
-                        "name": "kube-api-access-brhzf",
+                        "name": "kube-api-access-ns46b",
                         "readOnly": true,
                         "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
                     }
@@ -5343,7 +5345,7 @@ response_dict: {
                 "type": "PodScheduled",
                 "status": "False",
                 "lastProbeTime": null,
-                "lastTransitionTime": "2021-09-28T09:12:14Z",
+                "lastTransitionTime": "2021-09-28T09:34:23Z",
                 "reason": "Unschedulable",
                 "message": "0/1 nodes are available: 1 node(s) had taint {node-role.kubernetes.io/master: }, that the pod didn't tolerate."
             }
@@ -5354,24 +5356,24 @@ response_dict: {
 is OK:  True
 HTTP status code:  200 
 
-<class 'dict'>
+--test delete pod:
 response_dict: {
     "kind": "Pod",
     "apiVersion": "v1",
     "metadata": {
         "name": "busybox",
         "namespace": "default",
-        "uid": "0c5aaf97-506e-4fc9-a4dd-b2c5e473e377",
-        "resourceVersion": "216842",
-        "creationTimestamp": "2021-09-28T09:12:14Z",
-        "deletionTimestamp": "2021-09-28T09:12:14Z",
+        "uid": "69599806-80a5-4e60-8726-61a205f055dc",
+        "resourceVersion": "218440",
+        "creationTimestamp": "2021-09-28T09:34:23Z",
+        "deletionTimestamp": "2021-09-28T09:34:23Z",
         "deletionGracePeriodSeconds": 0,
         "managedFields": [
             {
                 "manager": "kube-scheduler",
                 "operation": "Update",
                 "apiVersion": "v1",
-                "time": "2021-09-28T09:12:14Z",
+                "time": "2021-09-28T09:34:23Z",
                 "fieldsType": "FieldsV1",
                 "fieldsV1": {
                     "f:status": {
@@ -5394,7 +5396,7 @@ response_dict: {
                 "manager": "python-requests",
                 "operation": "Update",
                 "apiVersion": "v1",
-                "time": "2021-09-28T09:12:14Z",
+                "time": "2021-09-28T09:34:23Z",
                 "fieldsType": "FieldsV1",
                 "fieldsV1": {
                     "f:spec": {
@@ -5432,7 +5434,7 @@ response_dict: {
     "spec": {
         "volumes": [
             {
-                "name": "kube-api-access-brhzf",
+                "name": "kube-api-access-ns46b",
                 "projected": {
                     "sources": [
                         {
@@ -5487,7 +5489,7 @@ response_dict: {
                 "resources": {},
                 "volumeMounts": [
                     {
-                        "name": "kube-api-access-brhzf",
+                        "name": "kube-api-access-ns46b",
                         "readOnly": true,
                         "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
                     }
@@ -5529,7 +5531,7 @@ response_dict: {
                 "type": "PodScheduled",
                 "status": "False",
                 "lastProbeTime": null,
-                "lastTransitionTime": "2021-09-28T09:12:14Z",
+                "lastTransitionTime": "2021-09-28T09:34:23Z",
                 "reason": "Unschedulable",
                 "message": "0/1 nodes are available: 1 node(s) had taint {node-role.kubernetes.io/master: }, that the pod didn't tolerate."
             }

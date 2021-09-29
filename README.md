@@ -165,7 +165,7 @@ print("is OK: ", OK)
 print("HTTP status code: ", http_status_code)
 ```
 
-Delete a resource::
+Delete a resource:
 
 ```python
 response_dict,OK,http_status_code = client.deleteResource(kind="Pod", namespace="default",name="busybox")
@@ -174,7 +174,7 @@ print("is OK: ", OK)
 print("HTTP status code: ", http_status_code)
 ```
 
-Watch a resource
+Watch a resource:
 
 ```python
 from kubesys.watcher import KubernetesWatcher

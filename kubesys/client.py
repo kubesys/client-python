@@ -8,7 +8,7 @@ from kubesys.watcher import KubernetesWatcher
 import json
 
 class KubernetesClient():
-    def __init__(self,host_label="default", account_info=None, analyzer=None, verify_SSL=False, json_path="account.json") -> None:
+    def __init__(self,host_label="default", account_info=None, analyzer=None, verify_SSL=False, json_path="account.json",auto_init=True) -> None:
         if not account_info:
             with open("account.json",'r', encoding='UTF-8') as f:
                 account_info_dict = json.load(f)
@@ -34,11 +34,12 @@ class KubernetesClient():
 
         self.verify_SSL = verify_SSL
         self.http = None
-        self.Init()
+
+        if auto_init:
+            self.Init()
 
     def Init(self)->None:
         self.analyzer.learning(url=self.url, token=self.token, verify_SSL=self.verify_SSL)
-        # print(self.analyzer.FullKindToGroupMapper)
 
     def getNamespace(self,supportNS,value) ->str:
         if supportNS and len(value)>0:

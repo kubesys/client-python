@@ -21,7 +21,7 @@ We expect to provide a python client:
 ## Installation
 
 ```shell
-git clone --recursive https://github.com/kubesys/kubernetes-client-python.git
+python3 -m pip install kubesys
 ```
 
 just import the module by:

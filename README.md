@@ -42,15 +42,16 @@ from kubesys.client import KubernetesClient
 
 1. create token
 
-```yaml
+```Bash
 kubectl create -f https://raw.githubusercontent.com/kubesys/client-go/master/account.yaml
 ```
+
 2. get token
 
-```kubectl
+```Bash
 kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep kubernetes-client | awk '{print $1}') | grep "token:" | awk -F":" '{print$2}' | sed 's/ //g'
-
 ```
+
 ### Creating a client
 
 we assume the following information: 

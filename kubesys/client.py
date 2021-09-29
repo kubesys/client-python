@@ -1,5 +1,4 @@
 from typing import Union
-import requests
 from requests import status_codes
 from requests.api import request
 from kubesys.http_request import createRequest,createRequestReturOriginal

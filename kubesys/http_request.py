@@ -1,8 +1,6 @@
 from typing import Union
 import requests
 import json
-from requests import status_codes
-from requests.models import Response
 
 def createRequest(url,token,method="GET",body=None,verify=False,keep_json=False) -> Union[object,bool,str]:
     response, OK, status_code = createRequestReturOriginal(url,token,method,body,verify)

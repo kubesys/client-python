@@ -2,3 +2,4 @@ account.json
 __pycache__
 *.pyc
 kubesys/__pycache__
+for_package_wheel

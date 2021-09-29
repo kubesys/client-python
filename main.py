@@ -2,6 +2,8 @@ from kubesys.client import KubernetesClient
 from kubesys.common import goodPrintDict
 from kubesys.watcher import KubernetesWatcher
 from kubesys.watch_handler import WatchHandler
+import kubesys
+import os
 
 def test_CRUD():
     pod_json= '''{

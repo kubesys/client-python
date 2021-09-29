@@ -188,11 +188,13 @@ def DoModified(json_dict)->None:
 def DoDeleted(json_dict)->None:
     print("delete pod")
 
-client = KubernetesClient(host_label="default")                                                                 # init a client normally
+client = KubernetesClient(host_label="default")   
+                                                              # init a client normally
 # you can give the watchHandler by python-function
 watcher = KubernetesWatcher(client,WatchHandler(add_func=DoAdder,modify_func=DoModified,delete_func= DoDeleted))
 # or you can easily give the func-param by python-Lambda
-watcher = KubernetesWatcher(client,WatchHandler(add_func=lambda json_dict: print("add pod"),modify_func=lambda json_dict: print("modifiy pod"),delete_func=lambda json_dict: print("delete pod")))
+# watcher = KubernetesWatcher(client,WatchHandler(add_func=lambda json_dict: print("add pod"),modify_func=lambda json_dict: print("modifiy pod"),delete_func=lambda json_dict: print("delete pod")))
+
 client.watchResource(kind="Pod", namespace="default", name="busybox",watcher=watcher)
 ```
 

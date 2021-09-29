@@ -1,15 +1,5 @@
-
-def DoAdder(json_dict)->None:
-    print("add pod")
-
-def DoModified(json_dict)->None:
-    print("update pod")
-
-def DoDeleted(json_dict)->None:
-    print("delete pod")
-
 class WatchHandler():
-    def __init__(self,func={"DoAdder":DoAdder,"DoModified":DoModified,"DoDeleted":DoDeleted}) -> None:
-        self.DoAdded= func["DoAdder"]
-        self.DoModified= func["DoModified"]
-        self.DoDeleted = func["DoDeleted"]
+    def __init__(self, add_func = lambda json_dict: print("add pod"), modify_func = lambda json_dict: print("modifiy pod"),delete_func = lambda json_dict: print("delete pod")) -> None:
+        self.DoAdded= add_func
+        self.DoModified= modify_func
+        self.DoDeleted = delete_func

@@ -65,10 +65,10 @@ def test_watcher():
     client = KubernetesClient(host_label="default")
     watcher = KubernetesWatcher(client,WatchHandler())
     client.watchResource(kind="Pod", namespace="default", name="busybox",watcher=watcher)
-    
+
 def main():
     test_CRUD()
-    test_watcher()
+    # test_watcher()
 
 if __name__ == '__main__':
     main()

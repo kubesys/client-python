@@ -191,7 +191,7 @@ class KubernetesClient():
 
         thread_t = threading.Thread(target=KubernetesClient.watching, args=(url,self.token,watcherhandler,),name=thread_name,daemon=is_daemon)
 
-        watcher = KubernetesWatcher(thread_t=thread_t,kind=kind,namespace=namespace,watcher_handler=watcherhandler,name=name)
+        watcher = KubernetesWatcher(thread_t=thread_t,kind=kind,namespace=namespace,watcher_handler=watcherhandler,name=name,url=url)
         KubernetesClient.watcher_threads[thread_t.getName()] = watcher
         watcher.run()
         
@@ -217,6 +217,10 @@ class KubernetesClient():
                     continue
 
                 jsonObj = jsonBytesToDict(json_bytes)
+                if "type" not in jsonObj.keys():
+                    print("type is not found in keys while watching, dict is: ",jsonObj)
+                    exit(-3)
+
                 if jsonObj["type"] == "ADDED":
                     watchHandler.DoAdded(jsonObj["object"])
                 elif jsonObj["type"] == "MODIFIED":
@@ -330,15 +334,14 @@ class KubernetesClient():
         return False
 
     @staticmethod
-    def joinWatcher(thread_name)->None:
-        if thread_name in KubernetesClient.watcher_threads.keys():
-            return KubernetesClient.watcher_threads[thread_name].join()
-
-    @staticmethod
-    def closeWatchers()->None:
+    def removeWatchers()->None:
         for thread_name in KubernetesClient.watcher_threads.keys():
             KubernetesClient.watcher_threads[thread_name].stop()
-        KubernetesClient.watcher_threads = None
+        KubernetesClient.watcher_threads = {}
+
+    def joinWatchers()->None:
+        for thread_name in KubernetesClient.watcher_threads.keys():
+            KubernetesClient.watcher_threads[thread_name].join()
 
     @staticmethod
     def getWatcherThreadNames()->list:

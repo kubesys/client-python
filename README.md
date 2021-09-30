@@ -210,14 +210,12 @@ see the result in [run-outputs](/out.txt)
 
 ```python
 from kubesys.client import KubernetesClient
-from kubesys.common import goodPrintDict,dictToJsonString
+from kubesys.common import dictToJsonString, getActiveThreadCount
 from kubesys.watch_handler import WatchHandler
+import time
 # import kubesys
 
-url = ""
-token = ""
-
-def test_CRUD():
+def test_CRUD(client):
     pod_json= '''{
                         "apiVersion": "v1",
                         "kind": "Pod",
@@ -243,8 +241,6 @@ def test_CRUD():
                             "restartPolicy": "Always"
                         }
                     }'''
-
-    client = KubernetesClient(url=url,token=token)
 
     # test list resources
     print("--test list resources:")
@@ -274,14 +270,24 @@ def test_CRUD():
     # print("is OK: ", OK)
     # print("HTTP status code: ", http_status_code,"\n")
 
-def test_watcher():
+def test_watcher(client,namespce,kind,name=None):
     print("--start to watch...")
-    client = KubernetesClient(account_json={"json_path": "account.json", "host_label": "default"})
-    client.watchResource(kind="Pod", namespace="default", name="busybox",watcherhandler=WatchHandler(add_func = lambda json_dict: print("ADDED: ", dictToJsonString(json_dict)), modify_func = lambda json_dict: print("MODIFIED: ", dictToJsonString(json_dict)),delete_func = lambda json_dict: print("DELETED: ", dictToJsonString(json_dict))))
+    # client.watchResource(kind="Pod", namespace="default", name="busybox",watcherhandler=WatchHandler(add_func = lambda json_dict: print("ADDED: ", dictToJsonString(json_dict)), modify_func = lambda json_dict: print("MODIFIED: ", dictToJsonString(json_dict)),delete_func = lambda json_dict: print("DELETED: ", dictToJsonString(json_dict))))
+    watcher = client.watchResource(kind=kind, namespace=namespce, name=name,watcherhandler=WatchHandler(add_func = lambda json_dict: print(kind,"-ADDED: ",dictToJsonString(json_dict)[:20]), modify_func = lambda json_dict: print(kind,"-MODIFIED: ",dictToJsonString(json_dict)[:20]),delete_func = lambda json_dict: print(kind,"-DELETED: ",dictToJsonString(json_dict)[:20])))
+    print(watcher.url)
 
 def main():
-    test_watcher()
-    test_CRUD()
+    url = ""
+    token = ""
+
+    client = KubernetesClient(url=url,token=token)
+    test_watcher(client,"default","DaemonSet")
+    test_watcher(client,"default","Pod")
+    test_watcher(client,"default","Service")
+    test_watcher(client,"default","Deployment")
+    test_watcher(client,"default","APIService")
+    test_CRUD(client=client)
+    KubernetesClient.joinWatchers()
 
 if __name__ == '__main__':
     main()

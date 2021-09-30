@@ -162,7 +162,7 @@ print("is OK: ", OK)
 print("HTTP status code: ", http_status_code)
 ```
 
-Delete a resource::
+Delete a resource:
 
 ```python
 response_dict,OK,http_status_code = client.deleteResource(kind="Pod", namespace="default",name="busybox")
@@ -171,7 +171,7 @@ print("is OK: ", OK)
 print("HTTP status code: ", http_status_code)
 ```
 
-Watch a resource
+Watch a resource:
 
 ```python
 from kubesys.watcher import KubernetesWatcher
@@ -187,11 +187,55 @@ def DoDeleted(json_dict)->None:
     print("delete pod")
 
 client = KubernetesClient(url=url,token=token)                                                           # init a client normally
-# you can give the watchHandler by python-function
-watcher = KubernetesWatcher(client,WatchHandler(add_func=DoAdder,modify_func=DoModified,delete_func= DoDeleted))
-# or you can easily give the func-param by python-Lambda
-watcher = KubernetesWatcher(client,WatchHandler(add_func=lambda json_dict: print("add pod"),modify_func=lambda json_dict: print("modifiy pod"),delete_func=lambda json_dict: print("delete pod")))
-client.watchResource(kind="Pod", namespace="default", name="busybox",watcher=watcher)
+watcher = client.watchResource(kind=kind, namespace=namespce, name=name,watcherhandler=WatchHandler(add_func = lambda json_dict: print(kind,"-ADDED: "), modify_func = lambda json_dict: print(kind,"-MODIFIED: "),delete_func = lambda json_dict: print(kind,"-DELETED: "))
+
+# you can view the KubernetesWatcher-class to learn more about this.
+print(watcher.url)
+print(watcher.thread_name)              
+```
+
+**the watcher will be close automatically when the main thead exit. If this is not your aim, you can set the param by `is_daemon=False`**
+
+get how much watcher is running:
+
+```python
+KubernetesClient.getWatchThreadCount()	# int
+```
+
+get watcher by thread-name:
+
+```python
+watcher = KubernetesClient.getWatcher(thread_name)
+```
+
+close a watcher by thread-name:
+
+```python
+KubernetesClient.removeWatcher(thread_name)
+```
+
+close all watchers:
+
+```python
+KubernetesClient.removeWatchers()
+```
+
+know if a watcher is running:
+
+```python
+KubernetesClient.isWatcherAlive(thread_name)		# bool
+```
+
+get the thread-names of all running watcher:
+
+```python
+KubernetesClient.getWatcherThreadNames()			# list[str]
+```
+
+if you want to wait watchers without the main-thread exit:
+
+```python
+KubernetesClient.joinWatchers()						# It will cause the program fail to exit.
 ```
 
 Show better print for python-dict as json:

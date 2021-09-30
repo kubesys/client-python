@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='kubesys',
-    version='1.0.4',
+    version='1.0.5',
     keywords='k8s',
     description='a python-based wrapper library for kubernetes-calls',
     author='a_flying_fish',

@@ -1,4 +1,5 @@
 import json
+import threading
 
 def goodPrintDict(dict_obj, show_print=False)->str:
     s= dictToJsonString(dict_obj)
@@ -20,3 +21,6 @@ def jsonBytesToDict(json_bytes) -> dict:
 
 def jsonStringToBytes(json_str,encoding = "utf-8")->bytes:
     return bytes(json_str,encoding=encoding)
+
+def getActiveThreadCount() -> int:
+    return threading.active_count()

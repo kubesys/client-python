@@ -1,6 +1,5 @@
 from kubesys.client import KubernetesClient
 from kubesys.common import goodPrintDict,dictToJsonString
-from kubesys.watcher import KubernetesWatcher
 from kubesys.watch_handler import WatchHandler
 # import kubesys
 
@@ -39,40 +38,39 @@ def test_CRUD():
     # test list resources
     print("--test list resources:")
     response_dict,OK,http_status_code = client.listResources("Pod")
-    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    print("is OK: ", OK)
-    print("HTTP status code: ", http_status_code,"\n")
+    # print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+    # print("is OK: ", OK)
+    # print("HTTP status code: ", http_status_code,"\n")
 
     # test create resources
     print("--test create resources:")
     response_dict,OK,http_status_code = client.createResource(pod_json)
-    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    print("is OK: ", OK)
-    print("HTTP status code: ", http_status_code,"\n")
+    # print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+    # print("is OK: ", OK)
+    # print("HTTP status code: ", http_status_code,"\n")
 
     # test get one single Resources
     print("--test get one single Resources")
     response_dict,OK,http_status_code = client.getResource(kind="Pod", namespace="default", name="busybox")
-    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    print("is OK: ", OK)
-    print("HTTP status code: ", http_status_code,"\n")
+    # print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+    # print("is OK: ", OK)
+    # print("HTTP status code: ", http_status_code,"\n")
 
     # test delete pod
     print("--test delete pod:")
     response_dict,OK,http_status_code = client.deleteResource(kind="Pod", namespace="default", name="busybox")
-    print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    print("is OK: ", OK)
-    print("HTTP status code: ", http_status_code,"\n")
+    # print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
+    # print("is OK: ", OK)
+    # print("HTTP status code: ", http_status_code,"\n")
 
 def test_watcher():
     print("--start to watch...")
     client = KubernetesClient(account_json={"json_path": "account.json", "host_label": "default"})
-    watcher = KubernetesWatcher(client,WatchHandler(add_func = lambda json_dict: print("ADDED: ", dictToJsonString(json_dict)), modify_func = lambda json_dict: print("MODIFIED: ", dictToJsonString(json_dict)),delete_func = lambda json_dict: print("DELETED: ", dictToJsonString(json_dict))))
-    client.watchResource(kind="Pod", namespace="default", name="busybox",watcher=watcher)
+    client.watchResource(kind="Pod", namespace="default", name="busybox",watcherhandler=WatchHandler(add_func = lambda json_dict: print("ADDED: ", dictToJsonString(json_dict)), modify_func = lambda json_dict: print("MODIFIED: ", dictToJsonString(json_dict)),delete_func = lambda json_dict: print("DELETED: ", dictToJsonString(json_dict))))
 
 def main():
+    test_watcher()
     test_CRUD()
-    # test_watcher()
 
 if __name__ == '__main__':
     main()

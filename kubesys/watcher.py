@@ -1,37 +1,38 @@
-import requests
-import json
-from kubesys.common import jsonBytesToDict
-
+import threading
+import inspect
+import ctypes
 class KubernetesWatcher():
-    def __init__(self,client=None,handler=None) -> None:
-        self.client = None
-        self.watchHandler = None
-        self.setValues(client,handler)
+    def __init__(self, thread_t,kind,namespace,watcher_handler,name):
+        self.thread_t = thread_t 
+        self.thread_name = self.thread_t.getName()
+        self.kind = kind
+        self.namespace = namespace
+        self.watcherhandler = watcher_handler
+        self.name = name
+        self.is_daemon = self.thread_t.isDaemon()
 
-    def setValues(self,client=None,handler=None) -> None:
-        if client:           
-            self.client = client
-        if handler:
-            self.watchHandler = handler
+    def run(self) -> None:
+        self.thread_t.start()
 
-    def watching(self,url,token)->None:
-        header = {
-            "Accept": "*/*",
-            "Authorization": "Bearer "+ token,
-            "Accept-Encoding": "gzip, deflate, br",
-        }
+    def join(self) -> None:
+        self.thread_t.join()
 
-        with requests.get(url=url, headers=header, verify=False, stream= True) as response:
-            for json_bytes in response.iter_lines():
-                if len(json_bytes)<1:
-                    continue
+    def is_alive(self) -> bool:
+        return self.thread_t.is_alive()
 
-                jsonObj = jsonBytesToDict(json_bytes)
-                if jsonObj["type"] == "ADDED":
-                    self.watchHandler.DoAdded(jsonObj["object"])
-                elif jsonObj["type"] == "MODIFIED":
-                    self.watchHandler.DoModified(jsonObj["object"])
-                elif jsonObj["type"] == "DELETED":
-                    self.watchHandler.DoDeleted(jsonObj["object"])
-                else:
-                    print("unknow type while watching:",jsonObj["type"])
+    def _async_raise(self, tid, exctype):
+        """raises the exception, performs cleanup if needed"""
+        tid = ctypes.c_long(tid)
+        if not inspect.isclass(exctype):
+            exctype = type(exctype)
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+        if res == 0:
+            raise ValueError("invalid thread id")
+        elif res != 1:
+            # """if it returns a number greater than one, you're in trouble,
+            # and you should call it again with exc=NULL to revert the effect"""
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+            raise SystemError("PyThreadState_SetAsyncExc failed")
+
+    def stop(self):
+        self._async_raise(self.thread_t.ident, SystemExit)

@@ -4,10 +4,15 @@ from requests import status_codes
 from requests.api import request
 from kubesys.http_request import createRequest,createRequestReturOriginal
 from kubesys.analyzer import KubernetesAnalyzer
-from kubesys.watcher import KubernetesWatcher
+import requests
 import json
+from kubesys.common import jsonBytesToDict
+import threading
+from kubesys.watcher import KubernetesWatcher
 
 class KubernetesClient():
+    watcher_threads={}              # static field, record the thread that used to watch
+
     def __init__(self,url=None,token=None, analyzer=None, verify_SSL=False, account_json={"json_path": "account.json","host_label": "default"}, relearning=True) -> None:
         if not url and not token:
             with open(account_json["json_path"],'r', encoding='UTF-8') as f:
@@ -168,7 +173,10 @@ class KubernetesClient():
 
         return createRequest(url=url,token=self.token, method="POST",data=jsonObj, keep_json=False)
 
-    def watchResource(self,kind,namespace,watcher,name=None) ->None:
+    def watchResource(self,kind,namespace,watcherhandler,name=None,thread_name=None, is_daemon=True) ->KubernetesWatcher:
+        '''
+        if is_daemon is True, when the main thread leave, this thead will leave automatically.
+        '''
         fullKind, error_str = self.checkAndReturnRealKind(kind,self.analyzer.KindToFullKindDict)
         if error_str:
             print(error_str)
@@ -181,10 +189,42 @@ class KubernetesClient():
         else:
             url += self.analyzer.FullKindToNameDict[fullKind]
 
-        watcher.watching(url=url,token=self.token)
+        thread_t = threading.Thread(target=KubernetesClient.watching, args=(url,self.token,watcherhandler,),name=thread_name,daemon=is_daemon)
 
-    def watchResources(self,kind,namespace,watcher) ->None:
-        self.watchResource(kind,namespace,watcher,name=None)
+        watcher = KubernetesWatcher(thread_t=thread_t,kind=kind,namespace=namespace,watcher_handler=watcherhandler,name=name)
+        KubernetesClient.watcher_threads[thread_t.getName()] = watcher
+        watcher.run()
+        
+        return watcher
+
+    def watchResources(self,kind,namespace,watcherhandler,thread_name=None, is_daemon=True) ->KubernetesWatcher:
+        '''
+        if is_daemon is True, when the main thread leave, this thead will leave automatically.
+        '''
+        return self.watchResource(kind,namespace,watcherhandler,name=None,thread_name=thread_name,isDaemon=is_daemon)
+
+    @staticmethod
+    def watching(url,token,watchHandler):
+        header = {
+            "Accept": "*/*",
+            "Authorization": "Bearer "+ token,
+            "Accept-Encoding": "gzip, deflate, br",
+        }
+
+        with requests.get(url=url, headers=header, verify=False, stream= True) as response:
+            for json_bytes in response.iter_lines():
+                if len(json_bytes)<1:
+                    continue
+
+                jsonObj = jsonBytesToDict(json_bytes)
+                if jsonObj["type"] == "ADDED":
+                    watchHandler.DoAdded(jsonObj["object"])
+                elif jsonObj["type"] == "MODIFIED":
+                    watchHandler.DoModified(jsonObj["object"])
+                elif jsonObj["type"] == "DELETED":
+                    watchHandler.DoDeleted(jsonObj["object"])
+                else:
+                    print("unknow type while watching:",jsonObj["type"])
 
     def updateResourceStatus(self, jsonStr)->Union[dict,bool,str]:
         jsonObj = jsonStr
@@ -262,3 +302,44 @@ class KubernetesClient():
         desc = self.getKindDesc()
         
         return jsonStringToBytes(dictToJsonString(desc))
+
+    '''
+    static methods for watch thread
+    '''
+
+    @staticmethod
+    def getWatchThreadCount() ->int:
+        return len(KubernetesClient.watcher_threads.keys())
+
+    @staticmethod
+    def getWatcher(thread_name)->KubernetesWatcher:
+        if thread_name in KubernetesClient.watcher_threads.keys():
+            return KubernetesClient.watcher_threads[thread_name]
+        return None
+
+    @staticmethod
+    def removeWatcher(thread_name)->None:
+        if thread_name in KubernetesClient.watcher_threads.keys():
+            KubernetesClient.watcher_threads[thread_name].stop()
+            del KubernetesClient.watcher_threads[thread_name]
+
+    @staticmethod
+    def isWatcherAlive(thread_name)->bool:
+        if thread_name in KubernetesClient.watcher_threads.keys():
+            return KubernetesClient.watcher_threads[thread_name].is_alive()
+        return False
+
+    @staticmethod
+    def joinWatcher(thread_name)->None:
+        if thread_name in KubernetesClient.watcher_threads.keys():
+            return KubernetesClient.watcher_threads[thread_name].join()
+
+    @staticmethod
+    def closeWatchers()->None:
+        for thread_name in KubernetesClient.watcher_threads.keys():
+            KubernetesClient.watcher_threads[thread_name].stop()
+        KubernetesClient.watcher_threads = None
+
+    @staticmethod
+    def getWatcherThreadNames()->list:
+        return KubernetesClient.watcher_threads.keys()

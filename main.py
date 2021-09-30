@@ -76,5 +76,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# 1. 缺少 watchResources(有了watchResource，缺少加s的)，getKinds、getFullKinds和getKindDesc

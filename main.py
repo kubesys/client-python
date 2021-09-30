@@ -62,20 +62,25 @@ def test_CRUD(client):
 def test_watcher(client,namespce,kind,name=None):
     print("--start to watch...")
     # client.watchResource(kind="Pod", namespace="default", name="busybox",watcherhandler=WatchHandler(add_func = lambda json_dict: print("ADDED: ", dictToJsonString(json_dict)), modify_func = lambda json_dict: print("MODIFIED: ", dictToJsonString(json_dict)),delete_func = lambda json_dict: print("DELETED: ", dictToJsonString(json_dict))))
-    watcher = client.watchResource(kind=kind, namespace=namespce, name=name,watcherhandler=WatchHandler(add_func = lambda json_dict: print(kind,"-ADDED: ",dictToJsonString(json_dict)[:20]), modify_func = lambda json_dict: print(kind,"-MODIFIED: ",dictToJsonString(json_dict)[:20]),delete_func = lambda json_dict: print(kind,"-DELETED: ",dictToJsonString(json_dict)[:20])))
+    watcher = client.watchResource(kind=kind, namespace=namespce, name=name,watcherhandler=WatchHandler(add_func = lambda json_dict: print(kind,"ADDED ",to_name(json_dict)), modify_func = lambda json_dict: print(kind,"MODIFIED ",to_name(json_dict)),delete_func = lambda json_dict: print(kind,"DELETED ",to_name(json_dict))))
     print(watcher.url)
+
+def to_name(json_dict):
+    return json_dict["metadata"]["name"]
 
 def main():
     url = ""
     token = ""
 
     client = KubernetesClient(url=url,token=token)
-    test_watcher(client,"default","DaemonSet")
-    test_watcher(client,"default","Pod")
-    test_watcher(client,"default","Service")
-    test_watcher(client,"default","Deployment")
-    test_watcher(client,"default","APIService")
-    test_CRUD(client=client)
+    test_watcher(client,"","DaemonSet")
+    test_watcher(client,"","Pod")
+    test_watcher(client,"","Service")
+    test_watcher(client,"","Deployment")
+    test_watcher(client,"","Secret")
+    test_watcher(client,"","Lease")
+    test_watcher(client,"","events.k8s.io.Event")
+#     test_CRUD(client=client)
     KubernetesClient.joinWatchers()
 
 if __name__ == '__main__':

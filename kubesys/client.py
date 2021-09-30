@@ -1,8 +1,6 @@
 from typing import Union
 from kubesys.common import getLastIndex,dictToJsonString,jsonStringToBytes
-from requests import status_codes
-from requests.api import request
-from kubesys.http_request import createRequest,createRequestReturOriginal
+from kubesys.http_request import createRequest
 from kubesys.analyzer import KubernetesAnalyzer
 import requests
 import json

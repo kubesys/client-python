@@ -1,4 +1,5 @@
 from typing import Union
+from kubesys.common import getLastIndex,dictToJsonString,jsonStringToBytes
 from requests import status_codes
 from requests.api import request
 from kubesys.http_request import createRequest,createRequestReturOriginal
@@ -7,34 +8,37 @@ from kubesys.watcher import KubernetesWatcher
 import json
 
 class KubernetesClient():
-    def __init__(self,host_label="default", account_info=None, analyzer=None, verify_SSL=False, json_path="account.json",auto_init=True) -> None:
-        if not account_info:
-            with open("account.json",'r', encoding='UTF-8') as f:
+    def __init__(self,url=None,token=None, analyzer=None, verify_SSL=False, account_json={"json_path": "account.json","host_label": "default"}, relearning=True) -> None:
+        if not url and not token:
+            with open(account_json["json_path"],'r', encoding='UTF-8') as f:
                 account_info_dict = json.load(f)
-                if host_label not in account_info_dict.keys():
-                    print("host label<%s> is not found in %s"%(host_label, json_path))
+                if account_json["host_label"] not in account_info_dict.keys():
+                    print("host label<%s> is not found in %s"%(account_json["host_label"], account_json["json_path"]))
                     exit(-2)
-                account_info = account_info_dict[host_label]
-
-        if "URL" in account_info.keys():
-            self.url = account_info["URL"].rstrip("/")
+                url = account_info_dict[account_json["host_label"]]["URL"]
+                token = account_info_dict[account_json["host_label"]]["Token"]
+        
+        if url:
+            self.url = url.rstrip("/")
         else:
-            self.url = ""
+            print("url is not given.")
+            exit(-2)
 
-        if "Token" in account_info.keys():
-            self.token = account_info["Token"]
+        if token:
+            self.token = token
         else:
-            self.token = ""
+            print("token is not given.")
+            exit(-2)
+
+        self.verify_SSL = verify_SSL
 
         if analyzer:
             self.analyzer = analyzer
         else:
             self.analyzer = KubernetesAnalyzer()
+            self.analyzer.learning(url=self.url, token=self.token, verify_SSL=self.verify_SSL)
 
-        self.verify_SSL = verify_SSL
-        self.http = None
-
-        if auto_init:
+        if relearning and self.analyzer:
             self.Init()
 
     def Init(self)->None:
@@ -83,7 +87,7 @@ class KubernetesClient():
         
         url = self.analyzer.FullKindToApiPrefixDict[kind] + "/"
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[kind], namespace)
-        url += self.Analyzer.FullKindToNameMapper[kind] + "/" + jsonObj["metadata"]["name"]
+        url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
 
         return createRequest(url=url,token=self.token,method="PUT",body=jsonStr,keep_json=False)
 
@@ -180,7 +184,7 @@ class KubernetesClient():
         watcher.watching(url=url,token=self.token)
 
     def watchResources(self,kind,namespace,watcher) ->None:
-        self.watchResource(self,kind,namespace,watcher,name=None)
+        self.watchResource(kind,namespace,watcher,name=None)
 
     def updateResourceStatus(self, jsonStr)->Union[dict,bool,str]:
         jsonObj = jsonStr
@@ -229,3 +233,32 @@ class KubernetesClient():
 
         url = url[:len(url)-1]
         return createRequest(url=url,token=self.token, method="GET", keep_json=False)
+
+    def getKinds(self) ->list:
+        return list(self.analyzer.KindToFullKindDict.keys())
+
+    def getFullKinds(self)->list:
+        return list(self.analyzer.FullKindToNameDict.keys())
+
+    def kind(self,fullkind)->str:
+        index = getLastIndex(fullkind,".")
+        if index<1:
+            return fullkind
+        return fullkind[index+1:]
+
+    def getKindDesc(self) -> dict:
+        desc = {}
+        for fullKind in self.analyzer.FullKindToNameDict.keys():
+            value = {}
+            value["apiVersion"] = self.analyzer.FullKindToVersionDict[fullKind]
+            value["kind"] = self.kind(fullKind)
+            value["plural"] = self.analyzer.FullKindToNameDict[fullKind]
+            value["verbs"] = self.analyzer.FullKindToVerbsDict[fullKind]
+            desc[fullKind] = value
+
+        return desc
+
+    def getKindDescBytes(self) -> bytes:
+        desc = self.getKindDesc()
+        
+        return jsonStringToBytes(dictToJsonString(desc))

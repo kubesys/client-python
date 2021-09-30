@@ -1,5 +1,6 @@
 import requests
 import json
+from kubesys.common import jsonBytesToDict
 
 class KubernetesWatcher():
     def __init__(self,client=None,handler=None) -> None:
@@ -25,7 +26,7 @@ class KubernetesWatcher():
                 if len(json_bytes)<1:
                     continue
 
-                jsonObj = json.loads(json_bytes)
+                jsonObj = jsonBytesToDict(json_bytes)
                 if jsonObj["type"] == "ADDED":
                     self.watchHandler.DoAdded(jsonObj["object"])
                 elif jsonObj["type"] == "MODIFIED":

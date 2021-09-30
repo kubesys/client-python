@@ -1,4 +1,5 @@
 import kubesys.http_request as http_request
+from kubesys.common import getLastIndex
 class KubernetesAnalyzer:
     def __init__(self) -> None:
         self.KindToFullKindDict = {}
@@ -39,14 +40,11 @@ class KubernetesAnalyzer:
                         self.FullKindToVerbsDict[fullKind] = resourceValue["verbs"]
 
     def getGroup(self,apiVersion)->str:
-        index = self.getLastIndex(apiVersion,"/")
+        index = getLastIndex(apiVersion,"/")
         if index>0:
             return apiVersion[:index]
         else:
             return ""
-
-    def getLastIndex(self,s,flag)->int:
-        return len(s)-s[::-1].find(flag)-1
 
     def getFullKind(self,shortKind,apiVersion)->str:
         index = apiVersion.find("/")

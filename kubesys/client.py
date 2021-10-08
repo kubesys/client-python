@@ -1,8 +1,6 @@
 from typing import Union
 from kubesys.common import getLastIndex,dictToJsonString,jsonStringToBytes,getParams,formatURL
-from requests import status_codes
-from requests.api import request
-from kubesys.http_request import createRequest,createRequestReturOriginal
+from kubesys.http_request import createRequest
 from kubesys.analyzer import KubernetesAnalyzer
 import requests
 import json
@@ -275,10 +273,8 @@ class KubernetesClient():
 
                 jsonObj = jsonBytesToDict(json_bytes)
                 handlerFunction(jsonObj=jsonObj)
-
-        print(KubernetesClient.getWatchThreadCount())
+                
         del KubernetesClient.watcher_threads[threading.currentThread().getName()]
-        print(KubernetesClient.getWatchThreadCount())
 
     def updateResourceStatus(self, jsonStr,**kwargs)->Union[dict,bool,str]:
         jsonObj = jsonStr

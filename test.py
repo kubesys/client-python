@@ -52,7 +52,6 @@ def test_CRUD(client):
     print("is OK: ", OK)
     print("HTTP status code: ", http_status_code,"\n")
 
-    time.sleep(5)
     # test delete pod
     print("--test delete pod:")
     response_dict,OK,http_status_code = client.deleteResource(kind="Pod", namespace="default", name="busybox")
@@ -69,7 +68,7 @@ def test_watcher(client,namespce,kind,name=None):
 def deal_watch(*args):
     def tt(jsonObj=None,args=args):
         print(dictToJsonString(jsonObj)[:20])
-    
+
     return tt
 
 def test_watcher_base(client,namespce,kind,name=None,handlerFunction=None,**kwargs):
@@ -83,9 +82,13 @@ def main():
     token = ""
 
     client = KubernetesClient(url=url,token=token)
-    test_watcher_base(client,"default","Pod",handlerFunction=deal_watch(),limit=1,timeoutSeconds=2)
+    test_watcher_base(client,"default","Pod",handlerFunction=deal_watch(),timeoutSeconds=3)
     test_CRUD(client=client)
+
+    print("current thread count: ",KubernetesClient.getWatchThreadCount())
     time.sleep(7)
+    # because of the timeoutSecond=3, watching thread is leave.
+    print("current thread count: ",KubernetesClient.getWatchThreadCount())
 
 if __name__ == '__main__':
     main()

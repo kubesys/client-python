@@ -1,5 +1,5 @@
 from kubesys.client import KubernetesClient
-from kubesys.common import dictToJsonString, getActiveThreadCount
+from kubesys.common import dictToJsonString, getActiveThreadCount,goodPrintDict
 from kubesys.watch_handler import WatchHandler
 import time
 # import kubesys
@@ -35,29 +35,30 @@ def test_CRUD(client):
     print("--test list resources:")
     response_dict,OK,http_status_code = client.listResources("Pod")
     # print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    # print("is OK: ", OK)
-    # print("HTTP status code: ", http_status_code,"\n")
+    print("is OK: ", OK)
+    print("HTTP status code: ", http_status_code,"\n")
 
     # test create resources
     print("--test create resources:")
     response_dict,OK,http_status_code = client.createResource(pod_json)
     # print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    # print("is OK: ", OK)
-    # print("HTTP status code: ", http_status_code,"\n")
+    print("is OK: ", OK)
+    print("HTTP status code: ", http_status_code,"\n")
 
     # test get one single Resources
     print("--test get one single Resources")
     response_dict,OK,http_status_code = client.getResource(kind="Pod", namespace="default", name="busybox")
     # print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    # print("is OK: ", OK)
-    # print("HTTP status code: ", http_status_code,"\n")
+    print("is OK: ", OK)
+    print("HTTP status code: ", http_status_code,"\n")
 
+    time.sleep(5)
     # test delete pod
     print("--test delete pod:")
     response_dict,OK,http_status_code = client.deleteResource(kind="Pod", namespace="default", name="busybox")
     # print("response_dict: %s"%(goodPrintDict(response_dict,show_print=False)))
-    # print("is OK: ", OK)
-    # print("HTTP status code: ", http_status_code,"\n")
+    print("is OK: ", OK)
+    print("HTTP status code: ", http_status_code,"\n")
 
 def test_watcher(client,namespce,kind,name=None):
     print("--start to watch...")
@@ -65,18 +66,26 @@ def test_watcher(client,namespce,kind,name=None):
     watcher = client.watchResource(kind=kind, namespace=namespce, name=name,watcherhandler=WatchHandler(add_func = lambda json_dict: print(kind,"-ADDED: ",dictToJsonString(json_dict)[:20]), modify_func = lambda json_dict: print(kind,"-MODIFIED: ",dictToJsonString(json_dict)[:20]),delete_func = lambda json_dict: print(kind,"-DELETED: ",dictToJsonString(json_dict)[:20])))
     print(watcher.url)
 
+def deal_watch(*args):
+    def tt(jsonObj=None,args=args):
+        print(dictToJsonString(jsonObj)[:20])
+    
+    return tt
+
+def test_watcher_base(client,namespce,kind,name=None,handlerFunction=None,**kwargs):
+    print("--start to watch...")
+    # client.watchResource(kind="Pod", namespace="default", name="busybox",watcherhandler=WatchHandler(add_func = lambda json_dict: print("ADDED: ", dictToJsonString(json_dict)), modify_func = lambda json_dict: print("MODIFIED: ", dictToJsonString(json_dict)),delete_func = lambda json_dict: print("DELETED: ", dictToJsonString(json_dict))))
+    watcher = client.watchResourceBase(kind=kind, namespace=namespce, name=name,handlerFunction=handlerFunction,**kwargs)
+    print(watcher.url)
+
 def main():
     url = ""
     token = ""
 
     client = KubernetesClient(url=url,token=token)
-    test_watcher(client,"default","DaemonSet")
-    test_watcher(client,"default","Pod")
-    test_watcher(client,"default","Service")
-    test_watcher(client,"default","Deployment")
-    test_watcher(client,"default","APIService")
+    test_watcher_base(client,"default","Pod",handlerFunction=deal_watch(),limit=1,timeoutSeconds=2)
     test_CRUD(client=client)
-    KubernetesClient.joinWatchers()
+    time.sleep(20)
 
 if __name__ == '__main__':
     main()

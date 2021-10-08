@@ -1,9 +1,10 @@
 from typing import Union
+from kubesys.common import formatURL,getParams
 import requests
 import json
 
-def createRequest(url,token,method="GET",body=None,verify=False,keep_json=False) -> Union[object,bool,str]:
-    response, OK, status_code = createRequestReturOriginal(url,token,method,body,verify)
+def createRequest(url,token,method="GET",body=None,verify=False,keep_json=False,**kwargs) -> Union[object,bool,str]:
+    response, OK, status_code = createRequestReturOriginal(formatURL(url,getParams(kwargs)),token,method,body,verify)
 
     result=response.json()
     if keep_json:
@@ -11,7 +12,7 @@ def createRequest(url,token,method="GET",body=None,verify=False,keep_json=False)
 
     return result,OK,status_code
 
-def createRequestReturOriginal(url,token,method="GET",body=None,verify=False)-> Union[object,bool,str]:
+def createRequestReturOriginal(url,token,method="GET",body=None,verify=False,**kwargs)-> Union[object,bool,str]:
     method_upper = method.upper()
 
     data=None
@@ -30,13 +31,13 @@ def createRequestReturOriginal(url,token,method="GET",body=None,verify=False)-> 
             data = str(body)
 
     if method_upper=="GET":
-        response = requests.get(url=url, headers=header, verify=verify)
+        response = requests.get(url=formatURL(url,getParams(kwargs)), headers=header, verify=verify)
     elif method_upper=="PUT":
-        response = requests.put(url=url,headers=header,data=data, verify=verify)
+        response = requests.put(url=formatURL(url,getParams(kwargs)),headers=header,data=data, verify=verify)
     elif method_upper=="DELETE":
-        response = requests.delete(url=url,headers=header, verify=verify)
+        response = requests.delete(url=formatURL(url,getParams(kwargs)),headers=header, verify=verify)
     elif method_upper=="POST":
-        response = requests.post(url=url,headers=header,data=data,verify=verify)
+        response = requests.post(url=formatURL(url,getParams(kwargs)),headers=header,data=data,verify=verify)
     else:
         print("unsupported HTTP request kind! Current method is",method_upper)
         exit(-1)

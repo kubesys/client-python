@@ -1,8 +1,9 @@
 import threading
 import inspect
 import ctypes
+from kubesys.common import formatURL,getParams
 class KubernetesWatcher():
-    def __init__(self, thread_t,kind,namespace,watcher_handler,name,url):
+    def __init__(self, thread_t,kind,namespace,watcher_handler,name,url,**kwargs):
         self.thread_t = thread_t 
         self.thread_name = self.thread_t.getName()
         self.kind = kind
@@ -10,7 +11,7 @@ class KubernetesWatcher():
         self.watcherhandler = watcher_handler
         self.name = name
         self.is_daemon = self.thread_t.isDaemon()
-        self.url = url
+        self.url = formatURL(url,getParams(kwargs))
 
     def run(self) -> None:
         self.thread_t.start()

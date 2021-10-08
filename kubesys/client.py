@@ -1,5 +1,5 @@
 from typing import Union
-from kubesys.common import getLastIndex,dictToJsonString,jsonStringToBytes
+from kubesys.common import getLastIndex,dictToJsonString,jsonStringToBytes,getParams,formatURL
 from requests import status_codes
 from requests.api import request
 from kubesys.http_request import createRequest,createRequestReturOriginal
@@ -62,7 +62,7 @@ class KubernetesClient():
         else:
             return apiVersion[:index] + "." + kind
 
-    def createResource(self,jsonStr) ->Union[dict,bool,str]:
+    def createResource(self,jsonStr,**kwargs) ->Union[dict,bool,str]:
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
@@ -77,9 +77,9 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[kind], namespace)
         url += self.analyzer.FullKindToNameDict[kind]
 
-        return createRequest(url=url,token=self.token,method="POST",body=jsonStr,keep_json=False)
+        return createRequest(url=url,token=self.token,method="POST",body=jsonStr,keep_json=False,**kwargs)
 
-    def updateResource(self,jsonStr)->Union[dict,bool,str]:
+    def updateResource(self,jsonStr,**kwargs)->Union[dict,bool,str]:
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
@@ -94,7 +94,7 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[kind], namespace)
         url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
 
-        return createRequest(url=url,token=self.token,method="PUT",body=jsonStr,keep_json=False)
+        return createRequest(url=url,token=self.token,method="PUT",body=jsonStr,keep_json=False,**kwargs)
 
     def checkAndReturnRealKind(self,kind,mapper)->Union[str,str]:
         index = kind.find(".")
@@ -114,7 +114,7 @@ class KubernetesClient():
 
         return kind, None
 
-    def deleteResource(self,kind,namespace,name)->Union[dict,bool,str]:
+    def deleteResource(self,kind,namespace,name,**kwargs)->Union[dict,bool,str]:
         fullKind, error_str = self.checkAndReturnRealKind(kind,self.analyzer.KindToFullKindDict)
         if error_str:
             return None,error_str
@@ -123,9 +123,9 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
 
-        return createRequest(url=url,token=self.token, method="DELETE",keep_json=False)
+        return createRequest(url=url,token=self.token, method="DELETE",keep_json=False,**kwargs)
 
-    def getResource(self,kind,name,namespace="")->Union[dict,bool,str]:
+    def getResource(self,kind,name,namespace="",**kwargs)->Union[dict,bool,str]:
         fullKind, error_str = self.checkAndReturnRealKind(kind,self.analyzer.KindToFullKindDict)
         if error_str:
             return None,error_str
@@ -134,9 +134,9 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
 
-        return createRequest(url=url,token=self.token, method="GET",keep_json=False)
+        return createRequest(url=url,token=self.token, method="GET",keep_json=False,**kwargs)
 
-    def listResources(self,kind,namespace="")->Union[dict,bool,str]:
+    def listResources(self,kind,namespace="",**kwargs)->Union[dict,bool,str]:
         fullKind, error_str = self.checkAndReturnRealKind(kind,self.analyzer.KindToFullKindDict)
         if error_str:
             return None,error_str
@@ -145,9 +145,9 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         url += self.analyzer.FullKindToNameDict[fullKind]
 
-        return createRequest(url=url,token=self.token, method="GET",keep_json=False)
+        return createRequest(url=url,token=self.token, method="GET",keep_json=False,**kwargs)
 
-    def bindResource(self,pod,host)->Union[dict,bool,str]:
+    def bindResource(self,pod,host,**kwargs)->Union[dict,bool,str]:
         jsonObj = {}
         jsonObj["apiVersion"] = "v1"
         jsonObj["kind"] = "Binding"
@@ -171,9 +171,9 @@ class KubernetesClient():
         url += self.analyzer.FullKindToNameDict[kind] + "/"
         url += pod["metadata"]["name"] + "/binding"
 
-        return createRequest(url=url,token=self.token, method="POST",data=jsonObj, keep_json=False)
+        return createRequest(url=url,token=self.token, method="POST",data=jsonObj, keep_json=False,**kwargs)
 
-    def watchResource(self,kind,namespace,watcherhandler,name=None,thread_name=None, is_daemon=True) ->KubernetesWatcher:
+    def watchResource(self,kind,namespace,watcherhandler,name=None,thread_name=None, is_daemon=True,**kwargs) ->KubernetesWatcher:
         '''
         if is_daemon is True, when the main thread leave, this thead will leave automatically.
         '''
@@ -189,29 +189,57 @@ class KubernetesClient():
         else:
             url += self.analyzer.FullKindToNameDict[fullKind]
 
-        thread_t = threading.Thread(target=KubernetesClient.watching, args=(url,self.token,watcherhandler,),name=thread_name,daemon=is_daemon)
+        thread_t = threading.Thread(target=KubernetesClient.watching, args=(url,self.token,watcherhandler,kwargs,),name=thread_name,daemon=is_daemon)
 
-        watcher = KubernetesWatcher(thread_t=thread_t,kind=kind,namespace=namespace,watcher_handler=watcherhandler,name=name,url=url)
+        watcher = KubernetesWatcher(thread_t=thread_t,kind=kind,namespace=namespace,watcher_handler=watcherhandler,name=name,url=url,**kwargs)
         KubernetesClient.watcher_threads[thread_t.getName()] = watcher
         watcher.run()
         
         return watcher
 
-    def watchResources(self,kind,namespace,watcherhandler,thread_name=None, is_daemon=True) ->KubernetesWatcher:
+    def watchResources(self,kind,namespace,watcherhandler,thread_name=None, is_daemon=True,**kwargs) ->KubernetesWatcher:
         '''
         if is_daemon is True, when the main thread leave, this thead will leave automatically.
         '''
-        return self.watchResource(kind,namespace,watcherhandler,name=None,thread_name=thread_name,isDaemon=is_daemon)
+        return self.watchResource(kind,namespace,watcherhandler,name=None,thread_name=thread_name,isDaemon=is_daemon,**kwargs)
+
+    def watchResourceBase(self,kind,namespace,handlerFunction,name=None,thread_name=None, is_daemon=True,**kwargs) ->KubernetesWatcher:
+        '''
+        if is_daemon is True, when the main thread leave, this thead will leave automatically.
+        '''
+        fullKind, error_str = self.checkAndReturnRealKind(kind,self.analyzer.KindToFullKindDict)
+        if error_str:
+            print(error_str)
+            return
+
+        url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/watch/"
+        url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
+        if name:
+            url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
+        else:
+            url += self.analyzer.FullKindToNameDict[fullKind]
+
+        thread_t = threading.Thread(target=KubernetesClient.watchingBase, args=(url,self.token,handlerFunction,kwargs,),name=thread_name,daemon=is_daemon)
+        watcher = KubernetesWatcher(thread_t=thread_t,kind=kind,namespace=namespace,watcher_handler=handlerFunction,name=name,url=url,**kwargs)
+        KubernetesClient.watcher_threads[thread_t.getName()] = watcher
+        watcher.run()
+        return watcher
+
+    def watchResourcesBase(self,kind,namespace,handlerFunction,thread_name=None, is_daemon=True,**kwargs) ->KubernetesWatcher:
+        '''
+        if is_daemon is True, when the main thread leave, this thead will leave automatically.
+        '''
+        return self.watchResourceBase(kind,namespace,handlerFunction,name=None,thread_name=thread_name,isDaemon=is_daemon,**kwargs)
 
     @staticmethod
-    def watching(url,token,watchHandler):
+    def watching(url,token,watchHandler,kwargs):
         header = {
             "Accept": "*/*",
             "Authorization": "Bearer "+ token,
             "Accept-Encoding": "gzip, deflate, br",
         }
 
-        with requests.get(url=url, headers=header, verify=False, stream= True) as response:
+        with requests.get(url=formatURL(url,getParams(kwargs)), headers=header, verify=False, stream= True) as response:
             for json_bytes in response.iter_lines():
                 if len(json_bytes)<1:
                     continue
@@ -230,7 +258,29 @@ class KubernetesClient():
                 else:
                     print("unknow type while watching:",jsonObj["type"])
 
-    def updateResourceStatus(self, jsonStr)->Union[dict,bool,str]:
+        KubernetesClient.removeWatcher(thread_name=threading.currentThread().getName())
+
+    @staticmethod
+    def watchingBase(url,token,handlerFunction,kwargs):
+        header = {
+            "Accept": "*/*",
+            "Authorization": "Bearer "+ token,
+            "Accept-Encoding": "gzip, deflate, br",
+        }
+
+        with requests.get(url=formatURL(url,getParams(kwargs)), headers=header, verify=False, stream= True) as response:
+            for json_bytes in response.iter_lines():
+                if len(json_bytes)<1:
+                    continue
+
+                jsonObj = jsonBytesToDict(json_bytes)
+                handlerFunction(jsonObj=jsonObj)
+
+        print(KubernetesClient.getWatchThreadCount())
+        del KubernetesClient.watcher_threads[threading.currentThread().getName()]
+        print(KubernetesClient.getWatchThreadCount())
+
+    def updateResourceStatus(self, jsonStr,**kwargs)->Union[dict,bool,str]:
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
@@ -245,7 +295,7 @@ class KubernetesClient():
         url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
         url += "/status"
 
-        return createRequest(url=url,token=self.token, method="PUT", body=jsonObj, keep_json=False)
+        return createRequest(url=url,token=self.token, method="PUT", body=jsonObj, keep_json=False,**kwargs)
 
     def listResourcesWithLabelSelector(self,kind, namespace, labels)->Union[dict,bool,str]:
         fullKind, error_str = self.checkAndReturnRealKind(kind,self.analyzer.KindToFullKindDict)
@@ -324,7 +374,9 @@ class KubernetesClient():
     @staticmethod
     def removeWatcher(thread_name)->None:
         if thread_name in KubernetesClient.watcher_threads.keys():
-            KubernetesClient.watcher_threads[thread_name].stop()
+            if KubernetesClient.isWatcherAlive(thread_name):
+                KubernetesClient.watcher_threads[thread_name].stop()
+
             del KubernetesClient.watcher_threads[thread_name]
 
     @staticmethod
@@ -339,6 +391,13 @@ class KubernetesClient():
             KubernetesClient.watcher_threads[thread_name].stop()
         KubernetesClient.watcher_threads = {}
 
+    @staticmethod
+    def removeClosedWatchers()->None:
+        for thread_name in KubernetesClient.watcher_threads.keys():
+            if not KubernetesClient.isWatcherAlive(thread_name):
+                KubernetesClient.removeWatcher(thread_name)
+
+    @staticmethod
     def joinWatchers()->None:
         for thread_name in KubernetesClient.watcher_threads.keys():
             KubernetesClient.watcher_threads[thread_name].join()
@@ -346,3 +405,5 @@ class KubernetesClient():
     @staticmethod
     def getWatcherThreadNames()->list:
         return KubernetesClient.watcher_threads.keys()
+
+        

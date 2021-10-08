@@ -63,7 +63,7 @@ def test_CRUD(client):
 def test_watcher(client,namespce,kind,name=None):
     print("--start to watch...")
     # client.watchResource(kind="Pod", namespace="default", name="busybox",watcherhandler=WatchHandler(add_func = lambda json_dict: print("ADDED: ", dictToJsonString(json_dict)), modify_func = lambda json_dict: print("MODIFIED: ", dictToJsonString(json_dict)),delete_func = lambda json_dict: print("DELETED: ", dictToJsonString(json_dict))))
-    watcher = client.watchResource(kind=kind, namespace=namespce, name=name,watcherhandler=WatchHandler(add_func = lambda json_dict: print(kind,"-ADDED: ",dictToJsonString(json_dict)[:20]), modify_func = lambda json_dict: print(kind,"-MODIFIED: ",dictToJsonString(json_dict)[:20]),delete_func = lambda json_dict: print(kind,"-DELETED: ",dictToJsonString(json_dict)[:20])))
+    watcher = client.watchResource(kind=kind, namespace=namespce, name=name,watcherhandler=WatchHandler(add_func = lambda json_dict: print(kind,"ADDED ",dictToJsonString(json_dict)[:20]), modify_func = lambda json_dict: print(kind,"MODIFIED ",dictToJsonString(json_dict)[:20]),delete_func = lambda json_dict: print(kind,"DELETED ",dictToJsonString(json_dict)[:20])))
     print(watcher.url)
 
 def deal_watch(*args):
@@ -85,7 +85,7 @@ def main():
     client = KubernetesClient(url=url,token=token)
     test_watcher_base(client,"default","Pod",handlerFunction=deal_watch(),limit=1,timeoutSeconds=2)
     test_CRUD(client=client)
-    time.sleep(20)
+    time.sleep(7)
 
 if __name__ == '__main__':
     main()

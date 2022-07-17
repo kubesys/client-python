@@ -187,7 +187,7 @@ def DoDeleted(json_dict)->None:
     print("delete pod")
 
 client = KubernetesClient(url=url,token=token)                                                           # init a client normally
-watcher = client.watchResource(kind=kind, namespace=namespce, name=name,watcherhandler=WatchHandler(add_func = lambda json_dict: print(kind,"-ADDED: "), modify_func = lambda json_dict: print(kind,"-MODIFIED: "),delete_func = lambda json_dict: print(kind,"-DELETED: "))
+watcher = client.watchResource(kind=kind, namespace=namespace, name=name,watcherhandler=WatchHandler(add_func = lambda json_dict: print(kind,"-ADDED: "), modify_func = lambda json_dict: print(kind,"-MODIFIED: "),delete_func = lambda json_dict: print(kind,"-DELETED: "))
 
 # you can view the KubernetesWatcher-class to learn more about this.
 print(watcher.url)

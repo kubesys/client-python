@@ -358,10 +358,10 @@ def deal_watch(*args):
 
     return tt
 
-def test_watcher_base(client,namespce,kind,name=None,handlerFunction=None,**kwargs):
+def test_watcher_base(client,namespace,kind,name=None,handlerFunction=None,**kwargs):
     print("--start to watch...")
     # client.watchResource(kind="Pod", namespace="default", name="busybox",watcherhandler=WatchHandler(add_func = lambda json_dict: print("ADDED: ", dictToJsonString(json_dict)), modify_func = lambda json_dict: print("MODIFIED: ", dictToJsonString(json_dict)),delete_func = lambda json_dict: print("DELETED: ", dictToJsonString(json_dict))))
-    watcher = client.watchResourceBase(kind=kind, namespace=namespce, name=name,handlerFunction=handlerFunction,**kwargs)
+    watcher = client.watchResourceBase(kind=kind, namespace=namespace, name=name,handlerFunction=handlerFunction,**kwargs)
     print(watcher.url)
 
 def main():

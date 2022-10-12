@@ -21,7 +21,7 @@ We expect to provide a python client:
 ## Installation
 
 ```shell
-git clone --recursive https://github.com/kubesys/kubernetes-client-python.git
+git clone --recursive https://github.com/kubesys/client-python.git
 ```
 
 just import the module by:
@@ -43,7 +43,7 @@ from kubesys.client import KubernetesClient
 1. create token
 
 ```yaml
-kubectl create -f https://raw.githubusercontent.com/kubesys/client-go/master/account.yaml
+kubectl create -f https://raw.githubusercontent.com/kubesys/client-python/master/account.yaml
 ```
 2. get token
 

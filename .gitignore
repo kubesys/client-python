@@ -3,3 +3,4 @@ __pycache__
 *.pyc
 kubesys/__pycache__
 for_package_wheel
+.idea/*

@@ -1,3 +1,6 @@
+"""
+* Copyright (2021, ) Institute of Software, Chinese Academy of Sciences
+"""
 from typing import Union
 from kubesys.common import getLastIndex, dictToJsonString, jsonStringToBytes, getParams, formatURL
 from kubesys.http_request import createRequest
@@ -7,6 +10,9 @@ import json
 from kubesys.common import jsonBytesToDict
 import threading
 from kubesys.watcher import KubernetesWatcher
+
+__author__ = ('Tian Yu <yutian20@otcaix.iscas.ac.cn>',
+              'Heng Wu <wuheng@iscas.ac.cn>')
 
 
 class KubernetesClient():

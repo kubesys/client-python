@@ -1,17 +1,24 @@
-import threading
+"""
+* Copyright (2021, ) Institute of Software, Chinese Academy of Sciences
+"""
 import inspect
 import ctypes
-from kubesys.common import formatURL,getParams
+from kubesys.common import formatURL, getParams
+
+__author__ = ('Tian Yu <yutian20@otcaix.iscas.ac.cn>',
+              'Heng Wu <wuheng@iscas.ac.cn>')
+
+
 class KubernetesWatcher():
-    def __init__(self, thread_t,kind,namespace,watcher_handler,name,url,**kwargs):
-        self.thread_t = thread_t 
+    def __init__(self, thread_t, kind, namespace, watcher_handler, name, url, **kwargs):
+        self.thread_t = thread_t
         self.thread_name = self.thread_t.getName()
         self.kind = kind
         self.namespace = namespace
         self.watcherhandler = watcher_handler
         self.name = name
         self.is_daemon = self.thread_t.isDaemon()
-        self.url = formatURL(url,getParams(kwargs))
+        self.url = formatURL(url, getParams(kwargs))
 
     def run(self) -> None:
         self.thread_t.start()

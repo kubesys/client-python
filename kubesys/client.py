@@ -18,16 +18,22 @@ __author__ = ('Tian Yu <yutian20@otcaix.iscas.ac.cn>',
 class KubernetesClient():
     watcher_threads = {}  # static field, record the thread that used to watch
 
+    # def __init__(self, url=None, token=None, analyzer=None, verify_SSL=False,
+    #              account_json={"json_path": "account.json", "host_label": "default"}, relearning=True) -> None:
+    #     if not url and not token:
+    #         with open(account_json["json_path"], 'r', encoding='UTF-8') as f:
+    #             account_info_dict = json.load(f)
+    #             if account_json["host_label"] not in account_info_dict.keys():
+    #                 print("host label<%s> is not found in %s" % (account_json["host_label"], account_json["json_path"]))
+    #                 exit(-2)
+    #             url = account_info_dict[account_json["host_label"]]["URL"]
+    #             token = account_info_dict[account_json["host_label"]]["Token"]
+
     def __init__(self, url=None, token=None, analyzer=None, verify_SSL=False,
-                 account_json={"json_path": "account.json", "host_label": "default"}, relearning=True) -> None:
-        if not url and not token:
-            with open(account_json["json_path"], 'r', encoding='UTF-8') as f:
-                account_info_dict = json.load(f)
-                if account_json["host_label"] not in account_info_dict.keys():
-                    print("host label<%s> is not found in %s" % (account_json["host_label"], account_json["json_path"]))
-                    exit(-2)
-                url = account_info_dict[account_json["host_label"]]["URL"]
-                token = account_info_dict[account_json["host_label"]]["Token"]
+                 config="/etc/kubernetes/admin.conf", relearning=True) -> None:
+        # if not url and not token:
+            # with open(account_json["json_path"], 'r', encoding='UTF-8') as f:
+
 
         if url:
             self.url = url.rstrip("/")

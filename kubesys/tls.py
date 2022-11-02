@@ -8,6 +8,9 @@ from base64 import b64decode
 __author__ = ('Tian Yu <yutian20@otcaix.iscas.ac.cn>',
               'Heng Wu <wuheng@iscas.ac.cn>')
 
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+
 
 class Config():
     def __init__(self, server, certificateAuthorityData, clientCertificateData, clientKeyData):
@@ -24,5 +27,10 @@ def readConfig(config='/etc/kubernetes/admin.conf'):
                   certificateAuthorityData=b64decode(yf['clusters'][0]['cluster']['certificate-authority-data']),
                   clientCertificateData=b64decode(yf['users'][0]['user']['client-certificate-data']),
                   clientKeyData=b64decode(yf['users'][0]['user']['client-key-data']))
+
+
+def rootCAs(certificateAuthorityData):
+    return x509.load_pem_x509_csr(certificateAuthorityData, default_backend())
+
 
 

@@ -1,6 +1,7 @@
 """
 * Copyright (2021, ) Institute of Software, Chinese Academy of Sciences
 """
+import sys
 from typing import Union
 from kubesys.common import getLastIndex, dictToJsonString, jsonStringToBytes, getParams, formatURL
 from kubesys.http_request import createRequest
@@ -9,6 +10,8 @@ import requests
 import json
 from kubesys.common import jsonBytesToDict
 import threading
+
+from kubesys.tls import readConfig
 from kubesys.watcher import KubernetesWatcher
 
 __author__ = ('Tian Yu <yutian20@otcaix.iscas.ac.cn>',
@@ -29,37 +32,31 @@ class KubernetesClient():
     #             url = account_info_dict[account_json["host_label"]]["URL"]
     #             token = account_info_dict[account_json["host_label"]]["Token"]
 
-    def __init__(self, url=None, token=None, analyzer=None, verify_SSL=False,
-                 config="/etc/kubernetes/admin.conf", relearning=True) -> None:
+    def __init__(self, url=None, token=None, analyzer=None,
+                 config=None, relearning=True) -> None:
         # if not url and not token:
-            # with open(account_json["json_path"], 'r', encoding='UTF-8') as f:
+        self.config = readConfig(config)
 
-
-        if url:
+        if self.config is None:
+            if url is None or token is None:
+                sys.exit('missing url or token')
             self.url = url.rstrip("/")
-        else:
-            print("url is not given.")
-            exit(-2)
-
-        if token:
             self.token = token
         else:
-            print("token is not given.")
-            exit(-2)
-
-        self.verify_SSL = verify_SSL
+            self.url = self.config.server
+            self.token = None
 
         if analyzer:
             self.analyzer = analyzer
         else:
             self.analyzer = KubernetesAnalyzer()
-            self.analyzer.learning(url=self.url, token=self.token, verify_SSL=self.verify_SSL)
+            self.analyzer.learning(url=self.url, token=self.token, config=self.config)
 
         if relearning and self.analyzer:
             self.Init()
 
     def Init(self) -> None:
-        self.analyzer.learning(url=self.url, token=self.token, verify_SSL=self.verify_SSL)
+        self.analyzer.learning(url=self.url, token=self.token, config=self.config)
 
     def getNamespace(self, supportNS, value) -> str:
         if supportNS and len(value) > 0:
@@ -256,11 +253,17 @@ class KubernetesClient():
 
     @staticmethod
     def watching(url, token, watchHandler, kwargs):
-        header = {
-            "Accept": "*/*",
-            "Authorization": "Bearer " + token,
-            "Accept-Encoding": "gzip, deflate, br",
-        }
+        if token is None:
+            header = {
+                "Accept": "*/*",
+                "Accept-Encoding": "gzip, deflate, br",
+            }
+        else:
+            header = {
+                "Accept": "*/*",
+                "Authorization": "Bearer " + token,
+                "Accept-Encoding": "gzip, deflate, br",
+            }
 
         with requests.get(url=formatURL(url, getParams(kwargs)), headers=header, verify=False, stream=True) as response:
             for json_bytes in response.iter_lines():
@@ -285,11 +288,17 @@ class KubernetesClient():
 
     @staticmethod
     def watchingBase(url, token, handlerFunction, kwargs):
-        header = {
-            "Accept": "*/*",
-            "Authorization": "Bearer " + token,
-            "Accept-Encoding": "gzip, deflate, br",
-        }
+        if token is None:
+            header = {
+                "Accept": "*/*",
+                "Accept-Encoding": "gzip, deflate, br",
+            }
+        else:
+            header = {
+                "Accept": "*/*",
+                "Authorization": "Bearer " + token,
+                "Accept-Encoding": "gzip, deflate, br",
+            }
 
         with requests.get(url=formatURL(url, getParams(kwargs)), headers=header, verify=False, stream=True) as response:
             for json_bytes in response.iter_lines():

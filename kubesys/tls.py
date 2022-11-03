@@ -1,6 +1,7 @@
 """
 * Copyright (2021, ) Institute of Software, Chinese Academy of Sciences
 """
+import os
 
 import yaml
 from base64 import b64decode
@@ -33,4 +34,14 @@ def rootCAs(certificateAuthorityData):
     return x509.load_pem_x509_csr(certificateAuthorityData, default_backend())
 
 
+def tlsPaths(config):
+    return tlsFile('pem', config.certificateAuthorityData), tlsFile('ca', config.clientCertificateData), tlsFile('key', config.clientKeyData)
 
+
+def tlsFile(name, content):
+    path = os.getcwd() + "/" + name
+    if not os.path.exists(path):
+        f = open(path, "w")
+        f.write(str(content, 'UTF-8'))
+        f.close()
+    return path

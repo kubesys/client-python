@@ -20,13 +20,13 @@ class KubernetesAnalyzer:
         self.FullKindToGroupDict = {}
         self.FullKindToVerbsDict = {}
 
-    def learning(self, url, token, verify_SSL=False) -> None:
-        registryValues = http_request.createRequest(url=url, token=token, method="GET", keep_json=False)[0]
+    def learning(self, url, token, config) -> None:
+        registryValues = http_request.createRequest(url=url, token=token, method="GET", keep_json=False, config=config)[0]
 
         # print(registryValues)
         for path in registryValues["paths"]:
             if path.startswith("/api") and (len(path.split("/")) == 4 or path.lower().strip() == "/api/v1"):
-                resourceValues = http_request.createRequest(url=url + path, token=token, method="GET", keep_json=False)[
+                resourceValues = http_request.createRequest(url=url + path, token=token, method="GET", keep_json=False, config=config)[
                     0]
                 apiVersion = str(resourceValues["groupVersion"])
 

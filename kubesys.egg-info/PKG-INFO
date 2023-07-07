@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: kubesys
+Version: 2.0.0
+Summary: a python-based wrapper library for kubernetes-calls
+Author: a_flying_fish
+Author-email: yutian20@otcaix.iscas.ac.cn, wuheng@iscas.ac.cn
+License: MIT
+Keywords: k8s
+License-File: LICENSE

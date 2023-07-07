@@ -9,5 +9,5 @@ setup(
     license='MIT',
     author_email='yutian20@otcaix.iscas.ac.cn, wuheng@iscas.ac.cn',
     packages=['kubesys'],
-    install_requires=['requests>=2.28.1', 'pyyaml>=6.0', 'cryptography>=38.0.3']
+    install_requires=['requests>=2.31.0', 'pyyaml>=6.0', 'cryptography>=41.0.1']
 )

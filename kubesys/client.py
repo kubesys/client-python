@@ -35,7 +35,7 @@ class KubernetesClient():
     def __init__(self, url=None, token=None, analyzer=None,
                  config=None, relearning=True) -> None:
         # if not url and not token:
-        self.config = readConfig(config)
+        self.config = config
 
         if self.config is None:
             if url is None or token is None:
@@ -43,6 +43,7 @@ class KubernetesClient():
             self.url = url.rstrip("/")
             self.token = token
         else:
+            self.config = readConfig(config)
             self.url = self.config.server
             self.token = None
 

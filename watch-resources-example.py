@@ -21,6 +21,6 @@ def test_watcher(client, namespce, kind):
 
 
 if __name__ == '__main__':
-    client = KubernetesClient(url="https://133.133.135.193:8443",
-                              token="")
+    client = KubernetesClient(config=".token")
     test_watcher(client=client, namespce="", kind="Pod")
+    

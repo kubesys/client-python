@@ -86,8 +86,7 @@ class KubernetesClient():
         url = self.analyzer.FullKindToApiPrefixDict[kind] + "/"
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[kind], namespace)
         url += self.analyzer.FullKindToNameDict[kind]
-
-        return createRequest(url=url, token=self.token, method="POST", body=jsonStr, keep_json=False, **kwargs)
+        return createRequest(url=url, token=self.token, method="POST", body=jsonStr,keep_json=False, config=self.config, **kwargs)
 
     def updateResource(self, jsonStr, **kwargs) -> Union[dict, bool, str]:
         jsonObj = jsonStr
@@ -104,7 +103,7 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[kind], namespace)
         url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
 
-        return createRequest(url=url, token=self.token, method="PUT", body=jsonStr, keep_json=False, **kwargs)
+        return createRequest(url=url, token=self.token, method="PUT", body=jsonStr, keep_json=False,config=self.config, **kwargs)
 
     def checkAndReturnRealKind(self, kind, mapper) -> Union[str, str]:
         index = kind.find(".")
@@ -133,7 +132,7 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
 
-        return createRequest(url=url, token=self.token, method="DELETE", keep_json=False, **kwargs)
+        return createRequest(url=url, token=self.token, method="DELETE", keep_json=False,config=self.config, **kwargs)
 
     def getResource(self, kind, name, namespace="", **kwargs) -> Union[dict, bool, str]:
         fullKind, error_str = self.checkAndReturnRealKind(kind, self.analyzer.KindToFullKindDict)
@@ -144,7 +143,7 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
 
-        return createRequest(url=url, token=self.token, method="GET", keep_json=False, **kwargs)
+        return createRequest(url=url, token=self.token, method="GET", keep_json=False, config=self.config,**kwargs)
 
     def listResources(self, kind, namespace="", **kwargs) -> Union[dict, bool, str]:
         fullKind, error_str = self.checkAndReturnRealKind(kind, self.analyzer.KindToFullKindDict)
@@ -155,7 +154,7 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         url += self.analyzer.FullKindToNameDict[fullKind]
 
-        return createRequest(url=url, token=self.token, method="GET", keep_json=False, **kwargs)
+        return createRequest(url=url, token=self.token, method="GET", keep_json=False, config=self.config,**kwargs)
 
     def bindResource(self, pod, host, **kwargs) -> Union[dict, bool, str]:
         jsonObj = {}
@@ -181,7 +180,7 @@ class KubernetesClient():
         url += self.analyzer.FullKindToNameDict[kind] + "/"
         url += pod["metadata"]["name"] + "/binding"
 
-        return createRequest(url=url, token=self.token, method="POST", data=jsonObj, keep_json=False, **kwargs)
+        return createRequest(url=url, token=self.token, method="POST", data=jsonObj, keep_json=False, config=self.config,**kwargs)
 
     def watchResource(self, kind, namespace, watcherhandler, name=None, thread_name=None, is_daemon=True,
                       **kwargs) -> KubernetesWatcher:
@@ -199,8 +198,8 @@ class KubernetesClient():
             url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
         else:
             url += self.analyzer.FullKindToNameDict[fullKind]
-
-        thread_t = threading.Thread(target=KubernetesClient.watching, args=(url, self.token, watcherhandler, kwargs,),
+        thread_t = threading.Thread(target=KubernetesClient.watching,
+                                    args=(url, self.token, self.config, watcherhandler, kwargs,),
                                     name=thread_name, daemon=is_daemon)
 
         watcher = KubernetesWatcher(thread_t=thread_t, kind=kind, namespace=namespace, watcher_handler=watcherhandler,
@@ -253,38 +252,25 @@ class KubernetesClient():
                                       isDaemon=is_daemon, **kwargs)
 
     @staticmethod
-    def watching(url, token, watchHandler, kwargs):
-        if token is None:
-            header = {
-                "Accept": "*/*",
-                "Accept-Encoding": "gzip, deflate, br",
-            }
-        else:
-            header = {
-                "Accept": "*/*",
-                "Authorization": "Bearer " + token,
-                "Accept-Encoding": "gzip, deflate, br",
-            }
+    def watching(url, token, config, watchHandler, kwargs):
+        response=createRequest(url=formatURL(url, getParams(kwargs)), token=token, method="GET", keep_json=False, config=config,stream=True)[0]
+        for json_bytes in response.iter_lines():
+            if len(json_bytes) < 1:
+                continue
 
-        with requests.get(url=formatURL(url, getParams(kwargs)), headers=header, verify=False, stream=True) as response:
-            for json_bytes in response.iter_lines():
-                if len(json_bytes) < 1:
-                    continue
+            jsonObj = jsonBytesToDict(json_bytes)
+            if "type" not in jsonObj.keys():
+                print("type is not found in keys while watching, dict is: ", jsonObj)
+                exit(-3)
 
-                jsonObj = jsonBytesToDict(json_bytes)
-                if "type" not in jsonObj.keys():
-                    print("type is not found in keys while watching, dict is: ", jsonObj)
-                    exit(-3)
-
-                if jsonObj["type"] == "ADDED":
-                    watchHandler.DoAdded(jsonObj["object"])
-                elif jsonObj["type"] == "MODIFIED":
-                    watchHandler.DoModified(jsonObj["object"])
-                elif jsonObj["type"] == "DELETED":
-                    watchHandler.DoDeleted(jsonObj["object"])
-                else:
-                    print("unknow type while watching:", jsonObj["type"])
-
+            if jsonObj["type"] == "ADDED":
+                watchHandler.DoAdded(jsonObj["object"])
+            elif jsonObj["type"] == "MODIFIED":
+                watchHandler.DoModified(jsonObj["object"])
+            elif jsonObj["type"] == "DELETED":
+                watchHandler.DoDeleted(jsonObj["object"])
+            else:
+                print("unknow type while watching:", jsonObj["type"])
         KubernetesClient.removeWatcher(thread_name=threading.currentThread().getName())
 
     @staticmethod
@@ -326,7 +312,7 @@ class KubernetesClient():
         url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
         url += "/status"
 
-        return createRequest(url=url, token=self.token, method="PUT", body=jsonObj, keep_json=False, **kwargs)
+        return createRequest(url=url, token=self.token, method="PUT", body=jsonObj, keep_json=False,config=self.config, **kwargs)
 
     def listResourcesWithLabelSelector(self, kind, namespace, labels) -> Union[dict, bool, str]:
         fullKind, error_str = self.checkAndReturnRealKind(kind, self.analyzer.KindToFullKindDict)
@@ -341,7 +327,7 @@ class KubernetesClient():
         for key, value in labels.items():
             url += key + "%3D" + value + ","
         url = url[:len(url) - 1]
-        return createRequest(url=url, token=self.token, method="GET", keep_json=False)
+        return createRequest(url=url, token=self.token, method="GET", keep_json=False,config=self.config)
 
     def listResourcesWithFieldSelector(self, kind, namespace, fields) -> Union[dict, bool, str]:
         fullKind, error_str = self.checkAndReturnRealKind(kind, self.analyzer.KindToFullKindDict)
@@ -357,7 +343,7 @@ class KubernetesClient():
             url += key + "%3D" + value + ","
 
         url = url[:len(url) - 1]
-        return createRequest(url=url, token=self.token, method="GET", keep_json=False)
+        return createRequest(url=url, token=self.token, method="GET", keep_json=False,config=self.config)
 
     def getKinds(self) -> list:
         return list(self.analyzer.KindToFullKindDict.keys())

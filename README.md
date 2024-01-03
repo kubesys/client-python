@@ -5,6 +5,13 @@ We expect to provide a python client:
 - **Usability**. Developers just need to learn to write json/yaml(kubernetes native style) from [Kubernetes documentation](https://kubernetes.io/docs/home/).
 - **Integration**. It can work with the other Kubernetes clients, such as [fabric8](https://github.com/fabric8io/kubernetes-client), [official](https://github.com/kubernetes-client/java/).
 
+This project is based on the following softwares.
+
+| NAME         | Website                              | LICENSE                    | 
+|--------------|--------------------------------------|----------------------------|
+| requests     | https://github.com/psf/requests      | Apache License 2.0         |
+| pyyaml       | https://github.com/yaml/pyyaml       | MIT                        |
+| cryptography | https://github.com/pyca/cryptography | Apache License 2.0/BSD-3.0 |
 
 ## Security
 

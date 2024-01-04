@@ -1,4 +1,4 @@
-# Client-Python
+# Client_Python
 
 We expect to provide a python client:
 - **Flexibility**. It can support all Kubernetes-based systems with minimized extra development, such as [Openshift](https://www.redhat.com/en/technologies/cloud-computing/openshift), [istio](https://istio.io/), etc.
@@ -32,7 +32,7 @@ This project is based on the following softwares.
 ## Installation
 
 ```shell
-git clone --recursive https://github.com/kubesys/client-python.git
+git clone --recursive https://github.com/kubesys/client_python.git
 ```
 
 just import the module by:

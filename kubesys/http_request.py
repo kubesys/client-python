@@ -14,9 +14,9 @@ from kubesys.tls import tlsPaths
 
 
 def createRequest(url, token, method="GET", body=None, verify=False,
-                  keep_json=False, config=None,stream=False, **kwargs) -> Union[object, bool, str]:
+                  keep_json=False, config=None, **kwargs) -> Union[object, bool, str]:
     response, OK, status_code = doCreateRequest(
-        formatURL(url, getParams(kwargs)), token, method, body, config,stream)
+        formatURL(url, getParams(kwargs)), token, method, body, config)
 
     result = response.json()
     if keep_json:

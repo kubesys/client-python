@@ -4,7 +4,7 @@
 import sys
 from typing import Union
 from kubesys.common import getLastIndex, dictToJsonString, jsonStringToBytes, getParams, formatURL
-from kubesys.http_request import createRequest
+from kubesys.http_request import createRequest,doCreateRequest
 from kubesys.analyzer import KubernetesAnalyzer
 import requests
 import json
@@ -253,7 +253,7 @@ class KubernetesClient():
 
     @staticmethod
     def watching(url, token, config, watchHandler, kwargs):
-        response=createRequest(url=formatURL(url, getParams(kwargs)), token=token, method="GET", keep_json=False, config=config,stream=True)[0]
+        response=doCreateRequest(url=formatURL(url, getParams(kwargs)), token=token, method="GET", config=config,stream=True)[0]
         for json_bytes in response.iter_lines():
             if len(json_bytes) < 1:
                 continue

@@ -109,3 +109,4 @@ if __name__ == '__main__':
     # main()
     client = KubernetesClient(config='.token')
     print(client.getFullKinds())
+    # client.listResourcesWithFieldSelector(kind='Pod', namespace='', fields={'spec.nodeName': '=133.133.135.134'})

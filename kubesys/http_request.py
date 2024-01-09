@@ -17,12 +17,14 @@ def createRequest(url, token, method="GET", body=None, verify=False,
                   keep_json=False, config=None, **kwargs) -> Union[object, bool, str]:
     response, OK, status_code = doCreateRequest(
         formatURL(url, getParams(kwargs)), token, method, body, config)
+    try:
+        result = response.json()
+        if keep_json:
+            result = json.dumps(result, indent=4, separators=(',', ': '))
 
-    result = response.json()
-    if keep_json:
-        result = json.dumps(result, indent=4, separators=(',', ': '))
-
-    return result, OK, status_code
+        return result, OK, status_code
+    except:
+        return response, OK, status_code
 
 
 def doCreateRequest(url, token, method="GET", body=None, config=None,stream=False) \

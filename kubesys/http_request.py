@@ -1,9 +1,10 @@
 """
 * Copyright (2021, ) Institute of Software, Chinese Academy of Sciences
 """
-from typing import Union
-from kubesys.common import formatURL, getParams
+from kubesys.common import formatURL, getParams,dictToJsonString
 import requests
+from requests.models import HTTPError
+from requests.exceptions import JSONDecodeError
 import json
 
 __author__ = ('Tian Yu <yutian20@otcaix.iscas.ac.cn>',
@@ -14,49 +15,29 @@ from kubesys.tls import tlsPaths
 
 
 def createRequest(url, token, method="GET", body=None, verify=False,
-                  keep_json=False, config=None, **kwargs) -> Union[object, bool, str]:
-    response, OK, status_code = doCreateRequest(
+                  keep_json=False, config=None, **kwargs):
+    response = doCreateRequest(
         formatURL(url, getParams(kwargs)), token, method, body, config)
     try:
         result = response.json()
         if keep_json:
-            result = json.dumps(result, indent=4, separators=(',', ': '))
+            result=dictToJsonString(result)
+        return result
+    except JSONDecodeError:
+        raise HTTPError(response.status_code,response.url+' '+response.reason)
 
-        return result, OK, status_code
-    except:
-        return response, OK, status_code
-
-
-def doCreateRequest(url, token, method="GET", body=None, config=None,stream=False) \
-        -> Union[object, bool, str]:
+def doCreateRequest(url, token, method="GET", body=None, config=None,stream=False):
     if config is None:
         response = doCreateRequestWithToken(url, token, method,stream, body)
     else:
         response = doCreateRequestWithConfig(url, config, method,stream, body)
-
-    if 200 <= response.status_code <= 299:
-        return response, True, response.status_code
-
-    else:
-        return response, False, response.status_code
+    return response
 
 
 def doCreateRequestWithToken(url, token, method,stream, body=None):
     header, data = getHeaderAndBody(token, body)
     return requests.request(method, url=url,
                             headers=header, data=data, verify=False,stream=stream)
-
-    # if method_upper == "GET":
-    #     return requests.get(url=formatURL(url, getParams(kwargs)), headers=header, verify=False)
-    # elif method_upper == "PUT":
-    #     return requests.put(url=formatURL(url, getParams(kwargs)), headers=header, data=data, verify=False)
-    # elif method_upper == "DELETE":
-    #     return requests.delete(url=formatURL(url, getParams(kwargs)), headers=header, verify=False)
-    # elif method_upper == "POST":
-    #     return requests.post(url=formatURL(url, getParams(kwargs)), headers=header, data=data, verify=False)
-    # else:
-    #     print("unsupported HTTP request kind! Current method is", method_upper)
-    #     exit(-1)
 
 
 def doCreateRequestWithConfig(url, config, method, stream,body=None):

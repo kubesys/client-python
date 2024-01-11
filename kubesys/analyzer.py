@@ -3,6 +3,7 @@
 """
 import kubesys.http_request as http_request
 from kubesys.common import getLastIndex
+from kubesys.exceptions import KindException
 
 __author__ = ('Tian Yu <yutian20@otcaix.iscas.ac.cn>',
               'Heng Wu <wuheng@iscas.ac.cn>')
@@ -20,14 +21,29 @@ class KubernetesAnalyzer:
         self.FullKindToGroupDict = {}
         self.FullKindToVerbsDict = {}
 
+    def checkAndReturnRealKind(self, kind):
+        mapper=self.KindToFullKindDict
+        index = kind.find(".")
+        if index < 0:
+            if not mapper.get(kind) or len(mapper.get(kind)) == 0:
+                raise KindException(f"Invalid kind {kind}")
+            if len(mapper[kind]) == 1:
+                return mapper[kind][0]
+
+            else:
+                value = ""
+                for s in mapper[kind]:
+                    value += "," + s
+
+                raise KindException("please use fullKind: " + value[1:])
+
     def learning(self, url, token, config) -> None:
-        registryValues = http_request.createRequest(url=url, token=token, method="GET", keep_json=False, config=config)[0]
+        registryValues = http_request.createRequest(url=url, token=token, method="GET", keep_json=False, config=config)
 
         # print(registryValues)
         for path in registryValues["paths"]:
             if path.startswith("/api") and (len(path.split("/")) == 4 or path.lower().strip() == "/api/v1"):
-                resourceValues = http_request.createRequest(url=url + path, token=token, method="GET", keep_json=False, config=config)[
-                    0]
+                resourceValues = http_request.createRequest(url=url + path, token=token, method="GET", keep_json=False, config=config)
                 apiVersion = str(resourceValues["groupVersion"])
 
                 for resourceValue in resourceValues["resources"]:

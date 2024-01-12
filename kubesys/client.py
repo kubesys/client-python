@@ -6,6 +6,7 @@ from typing import Union
 from kubesys.common import getLastIndex, dictToJsonString, jsonStringToBytes, getParams, formatURL
 from kubesys.http_request import createRequest,doCreateRequest
 from kubesys.analyzer import KubernetesAnalyzer
+from kubesys.exceptions import WatchException
 import requests
 from requests.models import HTTPError,Response
 import json
@@ -90,7 +91,7 @@ class KubernetesClient():
         url += self.analyzer.FullKindToNameDict[kind]
         return createRequest(url=url, token=self.token, method="POST", body=jsonStr,keep_json=False, config=self.config, **kwargs)
 
-    def updateResource(self, jsonStr, **kwargs) -> Response:
+    def updateResource(self, jsonStr:Union[str,dict], **kwargs) -> Response:
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
@@ -144,7 +145,7 @@ class KubernetesClient():
 
         return createRequest(url=url, token=self.token, method="GET", keep_json=False, config=self.config,**kwargs)
 
-    def listResources(self, kind, namespace="", **kwargs) -> Union[dict, bool, str]:
+    def listResources(self, kind, namespace="", **kwargs) -> Response:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)
 
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/"
@@ -251,8 +252,7 @@ class KubernetesClient():
 
             jsonObj = jsonBytesToDict(json_bytes)
             if "type" not in jsonObj.keys():
-                print("type is not found in keys while watching, dict is: ", jsonObj)
-                exit(-3)
+                raise WatchException(f"type is not found in keys while watching, dict is: {jsonObj}" )
 
             if jsonObj["type"] == "ADDED":
                 watchHandler.DoAdded(jsonObj["object"])
@@ -261,7 +261,7 @@ class KubernetesClient():
             elif jsonObj["type"] == "DELETED":
                 watchHandler.DoDeleted(jsonObj["object"])
             else:
-                print("unknow type while watching:", jsonObj["type"])
+                raise WatchException(f"unknow type while watching: {jsonObj['type']}")
         KubernetesClient.removeWatcher(thread_name=threading.currentThread().getName())
 
     @staticmethod

@@ -6,9 +6,8 @@ from typing import Union
 from kubesys.common import getLastIndex, dictToJsonString, jsonStringToBytes, getParams, formatURL
 from kubesys.http_request import createRequest,doCreateRequest
 from kubesys.analyzer import KubernetesAnalyzer
-from kubesys.exceptions import WatchException
+from kubesys.exceptions import WatchException,HTTPError
 import requests
-from requests.models import HTTPError,Response
 import json
 from kubesys.common import jsonBytesToDict
 import threading
@@ -75,7 +74,7 @@ class KubernetesClient():
         else:
             return apiVersion[:index] + "." + kind
 
-    def createResource(self, jsonStr, **kwargs) -> Response:
+    def createResource(self, jsonStr, **kwargs) -> dict:
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
@@ -91,7 +90,7 @@ class KubernetesClient():
         url += self.analyzer.FullKindToNameDict[kind]
         return createRequest(url=url, token=self.token, method="POST", body=jsonStr,keep_json=False, config=self.config, **kwargs)
 
-    def updateResource(self, jsonStr:Union[str,dict], **kwargs) -> Response:
+    def updateResource(self, jsonStr:Union[str,dict], **kwargs) -> dict:
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
@@ -128,7 +127,7 @@ class KubernetesClient():
     #
     #     return kind
 
-    def deleteResource(self, kind, namespace, name, **kwargs) -> Response:
+    def deleteResource(self, kind, namespace, name, **kwargs) -> dict:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/"
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
@@ -136,7 +135,7 @@ class KubernetesClient():
 
         return createRequest(url=url, token=self.token, method="DELETE", keep_json=False,config=self.config, **kwargs)
 
-    def getResource(self, kind, name, namespace="", **kwargs) -> Response:
+    def getResource(self, kind, name, namespace="", **kwargs) -> dict:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)
 
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/"
@@ -145,7 +144,7 @@ class KubernetesClient():
 
         return createRequest(url=url, token=self.token, method="GET", keep_json=False, config=self.config,**kwargs)
 
-    def listResources(self, kind, namespace="", **kwargs) -> Response:
+    def listResources(self, kind, namespace="", **kwargs) -> dict:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)
 
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/"
@@ -154,7 +153,7 @@ class KubernetesClient():
 
         return createRequest(url=url, token=self.token, method="GET", keep_json=False, config=self.config,**kwargs)
 
-    def bindResource(self, pod, host, **kwargs) -> Response:
+    def bindResource(self, pod, host, **kwargs) -> dict:
         jsonObj = {}
         jsonObj["apiVersion"] = "v1"
         jsonObj["kind"] = "Binding"
@@ -213,7 +212,7 @@ class KubernetesClient():
                                   isDaemon=is_daemon, **kwargs)
 
     def watchResourceBase(self, kind, namespace, handlerFunction, name=None, thread_name=None, is_daemon=True,
-                          **kwargs) -> Union[KubernetesWatcher,Response]:
+                          **kwargs) -> KubernetesWatcher:
         '''
         if is_daemon is True, when the main thread leave, this thead will leave automatically.
         '''
@@ -288,7 +287,7 @@ class KubernetesClient():
 
         del KubernetesClient.watcher_threads[threading.currentThread().getName()]
 
-    def updateResourceStatus(self, jsonStr, **kwargs) -> Response:
+    def updateResourceStatus(self, jsonStr, **kwargs) -> dict:
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
@@ -305,7 +304,7 @@ class KubernetesClient():
 
         return createRequest(url=url, token=self.token, method="PUT", body=jsonObj, keep_json=False,config=self.config, **kwargs)
 
-    def listResourcesWithLabelSelector(self, kind, namespace, labels) -> Response:
+    def listResourcesWithLabelSelector(self, kind, namespace, labels) -> dict:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)
 
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/"
@@ -317,7 +316,7 @@ class KubernetesClient():
         url = url[:len(url) - 1]
         return createRequest(url=url, token=self.token, method="GET", keep_json=False,config=self.config)
 
-    def listResourcesWithFieldSelector(self, kind, namespace, fields) -> Response:
+    def listResourcesWithFieldSelector(self, kind, namespace, fields) -> dict:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)
 
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/"

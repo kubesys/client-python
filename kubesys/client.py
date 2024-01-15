@@ -304,30 +304,23 @@ class KubernetesClient():
 
         return createRequest(url=url, token=self.token, method="PUT", body=jsonObj, keep_json=False,config=self.config, **kwargs)
 
-    def listResourcesWithLabelSelector(self, kind, namespace, labels) -> dict:
+    def listResourcesWithSelector(self, kind, namespace, tp,selects) -> dict:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)
 
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/"
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         url += self.analyzer.FullKindToNameDict[fullKind]
-        url += "?labelSelector="
-        for key, value in labels.items():
-            url += key + "%3D" + value + ","
+        if tp=='label':
+            url += "?labelSelector="
+        elif tp=='field':
+            url += "?fieldSelector="
+        else:
+            raise HTTPError(404,f"selector type {tp} should either be label or field")
+        for key, value in selects.items():
+            url += key + "%3D=" + value + ","
         url = url[:len(url) - 1]
         return createRequest(url=url, token=self.token, method="GET", keep_json=False,config=self.config)
 
-    def listResourcesWithFieldSelector(self, kind, namespace, fields) -> dict:
-        fullKind = self.analyzer.checkAndReturnRealKind(kind)
-
-        url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/"
-        url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
-        url += self.analyzer.FullKindToNameDict[fullKind]
-        url += "?fieldSelector="
-        for key, value in fields.items():
-            url += key + "%3D" + value + ","
-
-        url = url[:len(url) - 1]
-        return createRequest(url=url, token=self.token, method="GET", keep_json=False,config=self.config)
 
     def getKinds(self) -> list:
         return list(self.analyzer.KindToFullKindDict.keys())

@@ -304,6 +304,16 @@ class KubernetesClient():
 
         return createRequest(url=url, token=self.token, method="PUT", body=jsonObj, keep_json=False,config=self.config, **kwargs)
 
+    def getResourceStatus(self,kind, name, namespace="", **kwargs)->dict:
+        fullKind = self.analyzer.checkAndReturnRealKind(kind)
+
+        url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/"
+        url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
+        url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
+        url+="/status"
+
+        return createRequest(url=url, token=self.token, method="GET", keep_json=False, config=self.config, **kwargs)
+
     def listResourcesWithSelector(self, kind, namespace, tp,selects) -> dict:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)
 

@@ -36,6 +36,7 @@ class KubernetesAnalyzer:
                     value += "," + s
 
                 raise KindException("please use fullKind: " + value[1:])
+        return kind
 
     def learning(self, url, token, config) -> None:
         registryValues = http_request.createRequest(url=url, token=token, method="GET", keep_json=False, config=config)

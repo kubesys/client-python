@@ -32,6 +32,8 @@ def createRequest(url, token, method="GET", body=None, verify=False,
         formatURL(url, getParams(kwargs)), token, method, body, config)
     try:
         result = response.json()
+        if result.get('kind') == 'Status':
+            raise HTTPError(result.get('code'),result.get('reason')+' '+result.get('message'))
         if keep_json:
             result=dictToJsonString(result)
         return result

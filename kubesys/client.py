@@ -90,6 +90,8 @@ class KubernetesClient():
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
+        elif type(jsonObj) is dict:
+            jsonStr=dictToJsonString(jsonStr)
 
         kind = self.getRealKind(str(jsonObj["kind"]), str(jsonObj["apiVersion"]))
 
@@ -106,6 +108,8 @@ class KubernetesClient():
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
+        elif type(jsonObj) is dict:
+            jsonStr=dictToJsonString(jsonStr)
 
         kind = self.getRealKind(str(jsonObj["kind"]), str(jsonObj["apiVersion"]))
 
@@ -303,6 +307,8 @@ class KubernetesClient():
         jsonObj = jsonStr
         if type(jsonObj) is str:
             jsonObj = json.loads(jsonObj)
+        elif type(jsonObj) is dict:
+            jsonStr=dictToJsonString(jsonStr)
 
         kind = self.getRealKind(jsonObj["kind"], jsonObj["apiVersion"])
         namespace = ""
@@ -314,7 +320,7 @@ class KubernetesClient():
         url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
         url += "/status"
 
-        return createRequest(url=url, token=self.token, method="PUT", body=jsonObj, keep_json=False,config=self.config, **kwargs)
+        return createRequest(url=url, token=self.token, method="PUT", body=jsonStr, keep_json=False,config=self.config, **kwargs)
 
     def getResourceStatus(self,kind, name, namespace="", **kwargs)->dict:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)

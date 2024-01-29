@@ -205,9 +205,9 @@ class KubernetesClient():
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/watch/"
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         if name:
-            url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
+            url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name + "?watch=true&timeoutSeconds=315360000"
         else:
-            url += self.analyzer.FullKindToNameDict[fullKind]
+            url += self.analyzer.FullKindToNameDict[fullKind] + "?watch=true&timeoutSeconds=315360000"
         thread_t = threading.Thread(target=KubernetesClient.watching,
                                     args=(url, self.token, self.config, watcherhandler, kwargs,),
                                     name=thread_name, daemon=is_daemon)
@@ -237,9 +237,9 @@ class KubernetesClient():
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/watch/"
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         if name:
-            url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
+            url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name + "?watch=true&timeoutSeconds=315360000"
         else:
-            url += self.analyzer.FullKindToNameDict[fullKind]
+            url += self.analyzer.FullKindToNameDict[fullKind] + "?watch=true&timeoutSeconds=315360000"
 
         thread_t = threading.Thread(target=KubernetesClient.watchingBase,
                                     args=(url, self.token, handlerFunction, kwargs,), name=thread_name,

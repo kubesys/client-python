@@ -205,9 +205,9 @@ class KubernetesClient():
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/watch/"
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         if name:
-            url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name + "?watch=true&timeoutSeconds=315360000"
+            url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
         else:
-            url += self.analyzer.FullKindToNameDict[fullKind] + "?watch=true&timeoutSeconds=315360000"
+            url += self.analyzer.FullKindToNameDict[fullKind]
         thread_t = threading.Thread(target=KubernetesClient.watching,
                                     args=(url, self.token, self.config, watcherhandler, kwargs,),
                                     name=thread_name, daemon=is_daemon)
@@ -237,9 +237,9 @@ class KubernetesClient():
         url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/watch/"
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         if name:
-            url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name + "?watch=true&timeoutSeconds=315360000"
+            url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name
         else:
-            url += self.analyzer.FullKindToNameDict[fullKind] + "?watch=true&timeoutSeconds=315360000"
+            url += self.analyzer.FullKindToNameDict[fullKind]
 
         thread_t = threading.Thread(target=KubernetesClient.watchingBase,
                                     args=(url, self.token, handlerFunction, kwargs,), name=thread_name,
@@ -260,7 +260,8 @@ class KubernetesClient():
 
     @staticmethod
     def watching(url, token, config, watchHandler, kwargs):
-        response=doCreateRequest(url=formatURL(url, getParams(kwargs)), token=token, method="GET", config=config,stream=True)
+        # TODO
+        response=doCreateRequest(url=formatURL(url, getParams(kwargs)) + "&watch=true&timeoutSeconds=315360000", token=token, method="GET", config=config,stream=True)
         for json_bytes in response.iter_lines():
             if len(json_bytes) < 1:
                 continue
@@ -293,7 +294,8 @@ class KubernetesClient():
                 "Accept-Encoding": "gzip, deflate, br",
             }
 
-        with requests.get(url=formatURL(url, getParams(kwargs)), headers=header, verify=False, stream=True) as response:
+        # TODO
+        with requests.get(url=formatURL(url, getParams(kwargs)) + "&watch=true&timeoutSeconds=315360000", headers=header, verify=False, stream=True) as response:
             for json_bytes in response.iter_lines():
                 if len(json_bytes) < 1:
                     continue

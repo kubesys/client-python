@@ -322,7 +322,7 @@ class KubernetesClient():
         url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
         url += "/status"
 
-        return createRequest(url=url, token=self.token, method="PUT", body=jsonStr, keep_json=False,config=self.config, **kwargs)
+        return createRequest(url=url, token=self.token, method="PATCH", body=jsonStr, keep_json=False,config=self.config, **kwargs)
 
     def getResourceStatus(self,kind, name, namespace="", **kwargs)->dict:
         fullKind = self.analyzer.checkAndReturnRealKind(kind)

@@ -76,7 +76,7 @@ def getHeaderAndBody(token, body):
         }
 
     if body:
-        header["Content-Type"] = "application/json"
+        header["Content-Type"] = "application/merge-patch+json"
 
         if type(body) is dict:
             data = json.dumps(body, indent=4, separators=(',', ': '))

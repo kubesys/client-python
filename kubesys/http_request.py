@@ -49,14 +49,14 @@ def doCreateRequest(url, token, method="GET", body=None, config=None,stream=Fals
 
 
 def doCreateRequestWithToken(url, token, method,stream, body=None):
-    header, data = getHeaderAndBody(token, body)
+    header, data = getHeaderAndBody(token, body,method)
     return requests.request(method, url=url,
                             headers=header, data=data, verify=False,stream=stream)
 
 
 def doCreateRequestWithConfig(url, config, method, stream,body=None):
 
-    header, data = getHeaderAndBody(None, body)
+    header, data = getHeaderAndBody(None, body,method)
     pem, ca, key = tlsPaths(config)
     return requests.request(method, url=url, headers=header, data=data,
                             verify=pem, cert=(ca, key),stream=stream)
@@ -76,7 +76,10 @@ def getHeaderAndBody(token, body):
         }
 
     if body:
-        header["Content-Type"] = "application/merge-patch+json"
+        if method=="PATCH":
+            header["Content-Type"] = "application/merge-patch+json"
+        else:
+            header["Content-Type"] = "application/json"
 
         if type(body) is dict:
             data = json.dumps(body, indent=4, separators=(',', ': '))

@@ -62,7 +62,7 @@ def doCreateRequestWithConfig(url, config, method, stream,body=None):
                             verify=pem, cert=(ca, key),stream=stream)
 
 
-def getHeaderAndBody(token, body):
+def getHeaderAndBody(token, body,method):
     if token is None:
         header = {
             "Accept": "*/*",

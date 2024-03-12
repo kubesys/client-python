@@ -202,7 +202,7 @@ class KubernetesClient():
         '''
         fullKind = self.analyzer.checkAndReturnRealKind(kind)
 
-        url = self.analyzer.FullKindToApiPrefixDict[fullKind] + "/watch/"
+        url = self.analyzer.FullKindToApiPrefixDict[fullKind]+"/"
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[fullKind], namespace)
         if name:
             url += self.analyzer.FullKindToNameDict[fullKind] + "/" + name

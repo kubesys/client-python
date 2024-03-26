@@ -121,7 +121,7 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[kind], namespace)
         url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
 
-        return createRequest(url=url, token=self.token, method="PUT", body=jsonStr, keep_json=False,config=self.config, **kwargs)
+        return createRequest(url=url, token=self.token, method="PATCH", body=jsonStr, keep_json=False,config=self.config, **kwargs)
 
     # def checkAndReturnRealKind(self, kind, mapper):
     #     index = kind.find(".")

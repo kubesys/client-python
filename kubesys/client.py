@@ -121,6 +121,25 @@ class KubernetesClient():
         url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[kind], namespace)
         url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
 
+        return createRequest(url=url, token=self.token, method="PUT", body=jsonStr, keep_json=False,config=self.config, **kwargs)
+
+    def partiallyUpdateResource(self, jsonStr:Union[str,dict], **kwargs) -> dict:
+        jsonObj = jsonStr
+        if type(jsonObj) is str:
+            jsonObj = json.loads(jsonObj)
+        elif type(jsonObj) is dict:
+            jsonStr=dictToJsonString(jsonStr)
+
+        kind = self.getRealKind(str(jsonObj["kind"]), str(jsonObj["apiVersion"]))
+
+        namespace = ""
+        if "namespace" in jsonObj["metadata"].keys():
+            namespace = str(jsonObj["metadata"]["namespace"])
+
+        url = self.analyzer.FullKindToApiPrefixDict[kind] + "/"
+        url += self.getNamespace(self.analyzer.FullKindToNamespaceDict[kind], namespace)
+        url += self.analyzer.FullKindToNameDict[kind] + "/" + jsonObj["metadata"]["name"]
+
         return createRequest(url=url, token=self.token, method="PATCH", body=jsonStr, keep_json=False,config=self.config, **kwargs)
 
     # def checkAndReturnRealKind(self, kind, mapper):
